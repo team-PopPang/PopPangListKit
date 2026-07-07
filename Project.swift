@@ -38,7 +38,7 @@ let project = Project(
             sources: ["Demo/Sources/**"],
             dependencies: [
                 .target(name: "PopPangListKit"),
-                .sdk(name: "Testing", type: .framework),
+                
             ],
             settings: .settings(
                 base: [
@@ -57,6 +57,7 @@ let project = Project(
             sources: ["Tests/**"],
             dependencies: [
                 .target(name: "PopPangListKit"),
+                .sdk(name: "Testing", type: .framework),
             ]
         ),
     ],
