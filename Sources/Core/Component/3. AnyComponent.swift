@@ -111,6 +111,10 @@ public struct AnyComponent: Component, Equatable {
         AnyItem(component: box.baseComponent)
     }
     
+    public init(component: some Component) {
+        self.box = AnyComponentBox(baseComponent: component)
+    }
+    
     @MainActor
     public func renderContent(coordinator: Any) -> UIView {
         box.renderContent(coordinator: coordinator)

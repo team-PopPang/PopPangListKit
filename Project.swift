@@ -2,6 +2,12 @@ import ProjectDescription
 
 let project = Project(
     name: "PopPangListKit",
+    packages: [
+        .remote(
+            url: "https://github.com/ra1028/DifferenceKit.git",
+            requirement: .upToNextMajor(from: "1.3.0")
+        )
+    ],
     targets: [
         .target(
             name: "PopPangListKit",
@@ -10,7 +16,10 @@ let project = Project(
             bundleId: "com.poppang.poppanglistkit",
             deploymentTargets: .iOS("17.0"),
             infoPlist: .default,
-            sources: ["Sources/**"]
+            sources: ["Sources/**"],
+            dependencies: [
+                .package(product: "DifferenceKit")
+            ]
         ),
         .target(
             name: "PopPangListKitDemo",
