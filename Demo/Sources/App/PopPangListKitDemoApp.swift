@@ -4,7 +4,7 @@ import SwiftUI
 struct PopPangListKitDemoApp: App {
     var body: some Scene {
         WindowGroup {
-            PopPangListKitCatalogView()
+            RootView()
         }
     }
 }
