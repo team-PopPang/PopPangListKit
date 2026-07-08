@@ -148,6 +148,13 @@ extension VerticalLayout {
         return copy
     }
     
+    /// footer sticky 설정
+    public func footerPinToVisibleBounds(_ pinToVisibleBounds: Bool?) -> Self {
+        var copy = self
+        copy.footerPinToVisibleBounds = pinToVisibleBounds
+        return copy
+    }
+    
     /// visible item 변화 감지 핸들러 설정
     public func withVisibleItemsInvalidationHandler(
         _ handler: NSCollectionLayoutSectionVisibleItemsInvalidationHandler?
