@@ -1,5 +1,5 @@
 //
-//  VerticalLayout.swift
+//  HorizontalLayout.swift
 //  PopPangListKit
 //
 //  Created by 김동현 on 7/8/26.
@@ -7,20 +7,19 @@
 
 import UIKit
 
-/// 세로 스크롤(vertical scrolling)을 지원하는 레이아웃.
+/// 이 레이아웃은 가로 스크롤을 지원합니다.
 ///
-/// Cell의 width는 CollectionView의 전체 width를 그대로 사용하고,
-/// height는 content 크기에 맞게 자동으로 조정되는 경우에 적합하다.
-/// 즉, 우리가 흔히 사용하는 "세로 리스트 UI"에 해당한다.
-///
-/// - Note:
-/// 이 레이아웃을 사용할 때는 component의 layoutMode가
-/// 반드시 flexibleHeight여야 정상 동작한다.
+/// 셀의 너비와 높이가 모두 콘텐츠 크기에 맞게 설정되어 있다면,
+/// 이 레이아웃을 가로 스크롤 UI 형태로 사용할 수 있습니다.
+/// - Note: 가로 레이아웃을 사용할 때는 컴포넌트의 레이아웃 모드가 반드시 Fit Content여야 합니다.
 @MainActor
-public struct VerticalLayout: @MainActor CompositionalLayoutSectionFactory {
-    
+public struct HorizontalLayout: @MainActor CompositionalLayoutSectionFactory {
+ 
     /// Cell 사이 간격
     private let spacing: CGFloat
+    
+    /// 섹션의 가로 스크롤 동작 방식 (예: continuous, paging 등)
+    private let scrollingBehavior: UICollectionLayoutSectionOrthogonalScrollingBehavior
     
     /// Section Padding
     private var sectionInsets: NSDirectionalEdgeInsets?
@@ -32,26 +31,21 @@ public struct VerticalLayout: @MainActor CompositionalLayoutSectionFactory {
     private var footerPinToVisibleBounds: Bool?
     
     /// 스크롤 시 visible item 변화 감지 헨들러
-    /*
-     // 섹션의 항목이 표시되기 전에 수정을 할 수 있도록 각 레이아웃을 주기전에 호출되는 클로저
-     // https://medium.com/@wconceptTech/compositional-layout%EC%97%90-%EB%8C%80%ED%95%B4%EC%84%9C-9b8adf182e03
-    typealias NSCollectionLayoutSectionVisibleItemsInvalidationHandler
-    = (
-        [any NSCollectionLayoutVisibleItem], // Item
-        CGPoint,                             // 현재 위치
-        any NSCollectionLayoutEnvironment    // 환경
-    ) -> Void
-     */
     private var visibleItemsInvalidationHandler: NSCollectionLayoutSectionVisibleItemsInvalidationHandler?
     
-    /// 초기화
-    ///
-    /// - Parameter spacing: Cell 간 간격 (기본값 0)
-    public init(spacing: CGFloat = 0.0) {
+    /// 새로운 가로 레이아웃을 초기화합니다.
+    /// - Parameters:
+    ///   - spacing: 아이템 간 간격 (기본값: 0.0)
+    ///   - scrollingBehavior: 스크롤 동작 방식 (기본값: .continuous)
+    public init(
+        spacing: CGFloat = 0.0,
+        scrollingBehavior: UICollectionLayoutSectionOrthogonalScrollingBehavior = .continuous
+    ) {
         self.spacing = spacing
+        self.scrollingBehavior = scrollingBehavior
     }
     
-    /// Section 레이아웃 생성 (핵심)
+    /// 섹션에 대한 레이아웃을 생성합니다.
     /*
      typealias LayoutContext = (
          section: Section,
@@ -66,61 +60,64 @@ public struct VerticalLayout: @MainActor CompositionalLayoutSectionFactory {
      ) -> NSCollectionLayoutSection
      */
     public func makeSectionLayout() -> SectionLayout? {
-        { context -> NSCollectionLayoutSection in
-            /// 새로 그룹(리스트 형태)
-            let group = NSCollectionLayoutGroup.vertical(
+        { context -> NSCollectionLayoutSection? in
+            
+            /// 가로 방향 그룹 생성
+            let group = NSCollectionLayoutGroup.horizontal(
                 layoutSize: .init(
-                    widthDimension: .fractionalWidth(1.0), /// width는 전체 채움
-                    heightDimension: .estimated(           /// height는 content 기반 (estimated)
-                        context.environment.container.contentSize.height
-                    )
+                    /// 컨테이너 크기를 기준으로 "추정 너비"설정(동적 콘텐츠 대응)
+                    widthDimension: .estimated(context.environment.container.contentSize.width),
+                    /// 컨테이너 크기를 기준으로 "추정 높이" 설정
+                    heightDimension: .estimated(context.environment.container.contentSize.height)
                 ),
-                /// 각 cell들을 그대로 세로로 쌓음
                 subitems: layoutCellItems(
                     cells: context.section.cells,
                     sizeStorage: context.sizeStorage
                 )
             )
             
-            /// cell 간 간격
+            /// 아이템 간 간격 설정
             group.interItemSpacing = .fixed(spacing)
             
-            /// section 생성
+            /// 섹션 설정
             let section = NSCollectionLayoutSection(group: group)
             
-            /// inset 적용
+            /// 섹션 inset 적용
             if let sectionInsets {
                 section.contentInsets = sectionInsets
             }
             
-            /// visible item 변화 감지
+            /// visible item 변화 시 처리 로직 설정
             if let visibleItemsInvalidationHandler {
                 section.visibleItemsInvalidationHandler = visibleItemsInvalidationHandler
             }
             
-            /// header 생성
+            /// 가로 스크롤 활성화
+            section.orthogonalScrollingBehavior = scrollingBehavior
+            
+            /// 헤더 생성
             let headerItem = layoutHeaderItem(
                 section: context.section,
                 sizeStorage: context.sizeStorage
             )
             
-            /// header sticky
+            /// 헤더 고정 여부 설정
             if let headerPinToVisibleBounds {
                 headerItem?.pinToVisibleBounds = headerPinToVisibleBounds
             }
             
-            /// footer 생성
+            /// 푸터 생성
             let footerItem = layoutFooterItem(
                 section: context.section,
                 sizeStorage: context.sizeStorage
             )
             
-            /// footer sticky
+            /// 푸터 고정 여부 설정
             if let footerPinToVisibleBounds {
                 footerItem?.pinToVisibleBounds = footerPinToVisibleBounds
             }
             
-            /// header + footer 등록
+            /// 헤더 + 푸터를 섹션에 등록
             section.boundarySupplementaryItems = [
                 headerItem,
                 footerItem
@@ -132,23 +129,30 @@ public struct VerticalLayout: @MainActor CompositionalLayoutSectionFactory {
 }
 
 // MARK: - Modifier
-extension VerticalLayout {
+extension HorizontalLayout {
     
-    /// section inset 설정
+    /// 섹션의 inset을 설정합니다.
     public func insets(_ insets: NSDirectionalEdgeInsets?) -> Self {
         var copy = self
         copy.sectionInsets = insets
         return copy
     }
     
-    /// header sticky 설정
+    /// 헤더 고정 여부를 설정합니다.
     public func headerPinToVisibleBounds(_ pinToVisibleBounds: Bool?) -> Self {
         var copy = self
         copy.headerPinToVisibleBounds = pinToVisibleBounds
         return copy
     }
     
-    /// visible item 변화 감지 핸들러 설정
+    /// 푸터 고정 여부를 설정합니다.
+    public func footerPinToVisibleBounds(_ pinToVisibleBounds: Bool?) -> Self {
+        var copy = self
+        copy.footerPinToVisibleBounds = pinToVisibleBounds
+        return copy
+    }
+    
+    /// visible item 변경 시 실행될 핸들러를 설정합니다.
     public func withVisibleItemsInvalidationHandler(
         _ handler: NSCollectionLayoutSectionVisibleItemsInvalidationHandler?
     ) -> Self {
