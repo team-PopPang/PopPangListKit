@@ -23,8 +23,9 @@ struct CellTests {
         #expect(cell.id == AnyHashable("profile-1"))
     }
 
-    @Test("같은 id와 같은 component면 같다")
-    func sameIDAndSameComponent() {
+    // MARK: - Equatable
+    @Test("Equatable: 같은 id와 같은 component면 같다")
+    func equatable_sameIDAndSameComponent() {
         let lhs = Cell(
             id: "cell-1",
             component: MockComponent(item: .init(title: "A"))
@@ -37,8 +38,8 @@ struct CellTests {
         #expect(lhs == rhs)
     }
 
-    @Test("같은 id라도 component item이 다르면 다르다")
-    func sameIDDifferentComponent() {
+    @Test("Equatable: 같은 id라도 component item이 다르면 다르다")
+    func equatable_sameIDDifferentComponent() {
         let lhs = Cell(
             id: "cell-1",
             component: MockComponent(item: .init(title: "A"))
@@ -51,8 +52,8 @@ struct CellTests {
         #expect(lhs != rhs)
     }
 
-    @Test("component가 같아도 id가 다르면 다르다")
-    func differentIDSameComponent() {
+    @Test("Equatable: component가 같아도 id가 다르면 다르다")
+    func equatable_differentIDSameComponent() {
         let lhs = Cell(
             id: "cell-1",
             component: MockComponent(item: .init(title: "A"))
@@ -65,8 +66,9 @@ struct CellTests {
         #expect(lhs != rhs)
     }
 
-    @Test("hash는 id 기준이다")
-    func hashUsesID() {
+    // MARK: - Hashable
+    @Test("Hashable: hash는 id 기준이다")
+    func hashable_hashUsesID() {
         let lhs = Cell(
             id: "same-id",
             component: MockComponent(item: .init(title: "A"))
@@ -79,8 +81,41 @@ struct CellTests {
         #expect(lhs.hashValue == rhs.hashValue)
     }
 
-    @Test("differenceIdentifier는 id를 반환한다")
-    func differenceIdentifierUsesID() {
+    @Test("Hashable: 같은 id면 Set에서 중복 제거된다")
+    func hashable_sameIDRemovedInSet() {
+        let lhs = Cell(
+            id: "cell-1",
+            component: MockComponent(item: .init(title: "A"))
+        )
+        let rhs = Cell(
+            id: "cell-1",
+            component: MockComponent(item: .init(title: "A"))
+        )
+
+        let set: Set<Cell> = [lhs, rhs]
+
+        #expect(set.count == 1)
+    }
+
+    @Test("Hashable: 다른 id면 Set에서 각각 유지된다")
+    func hashable_differentIDKeptInSet() {
+        let lhs = Cell(
+            id: "cell-1",
+            component: MockComponent(item: .init(title: "A"))
+        )
+        let rhs = Cell(
+            id: "cell-2",
+            component: MockComponent(item: .init(title: "A"))
+        )
+
+        let set: Set<Cell> = [lhs, rhs]
+
+        #expect(set.count == 2)
+    }
+
+    // MARK: - Differentiable
+    @Test("Differentiable: differenceIdentifier는 id를 반환한다")
+    func differentiable_differenceIdentifierUsesID() {
         let cell = Cell(
             id: 100,
             component: MockComponent(item: .init(title: "A"))
@@ -89,8 +124,8 @@ struct CellTests {
         #expect(cell.differenceIdentifier == AnyHashable(100))
     }
 
-    @Test("isContentEqual은 id와 component가 같으면 true")
-    func contentEqual() {
+    @Test("Differentiable: isContentEqual은 id와 component가 같으면 true")
+    func differentiable_contentEqual() {
         let lhs = Cell(
             id: "cell-1",
             component: MockComponent(item: .init(title: "A"))
@@ -103,8 +138,8 @@ struct CellTests {
         #expect(lhs.isContentEqual(to: rhs))
     }
 
-    @Test("isContentEqual은 component가 다르면 false")
-    func contentNotEqualWhenComponentChanged() {
+    @Test("Differentiable: isContentEqual은 component가 다르면 false")
+    func differentiable_contentNotEqualWhenComponentChanged() {
         let lhs = Cell(
             id: "cell-1",
             component: MockComponent(item: .init(title: "A"))
