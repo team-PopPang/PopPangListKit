@@ -28,7 +28,7 @@ public protocol CompositionalLayoutSectionFactory {
     /// 섹션 레이아웃을 생성하는 클로저 타입
     typealias SectionLayout = (
         _ context: LayoutContext
-    ) -> NSCollectionLayoutSection
+    ) -> NSCollectionLayoutSection?
     
     /// 섹션 레이아웃 생성
     ///
@@ -53,7 +53,7 @@ public protocol CompositionalLayoutSectionFactory {
     ///   - sizeStorage: 헤더 사이즈 캐시
     /// - Returns: 헤더 레이아웃 아이템
     func layoutHeaderItem(
-        section: [Section],
+        section: Section,
         sizeStorage: ComponentSizeStorage
     ) -> NSCollectionLayoutBoundarySupplementaryItem?
     
@@ -64,7 +64,7 @@ public protocol CompositionalLayoutSectionFactory {
     ///   - sizeStorage: 푸터 사이즈 캐시
     /// - Returns: 푸터 레이아웃 아이템
     func layoutFooterItem(
-        section: [Section],
+        section: Section,
         sizeStorage: ComponentSizeStorage
     ) -> NSCollectionLayoutBoundarySupplementaryItem?
 }
