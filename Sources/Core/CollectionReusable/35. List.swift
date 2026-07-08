@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct List: ListingViewEventHandler {
+public struct List: @MainActor ListingViewEventHandler {
     
     /// Section UI를 표현하는 Section 배열
     public var setions: [Section]

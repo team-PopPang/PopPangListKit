@@ -17,16 +17,25 @@ import DifferenceKit
 ///
 /// - Note: 실제 레이아웃은 NSCollectionLayoutSection에 의해 결정되며,
 /// 반드시 withSectionLayout modifier를 통해 설정해야 합니다.
-public struct Section: Identifiable {
+public struct Section: Identifiable, @MainActor ListingViewEventHandler {
     
     /// Section을 식별하기 위한 ID
     public let id: AnyHashable
+    
+    /// 헤더를 표현하는 SuplementaryView
     public var header: SupplementaryView?
+    
+    /// UICollectionViewCell을 표현하는 Cell 배열
     public var cells: [Cell]
+    
+    /// 푸터를 사용하는 SuplementaryView
     public var footer: SupplementaryView?
     
     /// Section 레이아웃 설정(타입 소거된 레이아웃 클로저)
     private var sectionLayout: CompositionalLayoutSectionFactory.SectionLayout?
+    
+    /// 이벤트 저장소 (header/footer lifecycle 이벤트 등)
+    let eventStorage: ListingViewEventStorage
     
     /// Section을 생성하는 초기화 메서드입니다.
     ///
@@ -39,6 +48,7 @@ public struct Section: Identifiable {
     ) {
         self.id = id
         self.cells = cells
+        self.eventStorage = ListingViewEventStorage()
     }
 }
 
@@ -168,5 +178,75 @@ extension Section: DifferentiableSection {
     /// - Returns: 내용이 동일하면 true
     public func isContentEqual(to source: Section) -> Bool {
         self == source
+    }
+}
+
+// MARK: - Event Handler
+extension Section {
+    
+    /// Header가 화면에 표시될 때 호출되는 콜백 핸들러를 등록합니다.
+    ///
+    /// - Parameters:
+    ///   - handler: Header가 화면에 표시될 때 호출되는 콜백 핸들러
+    @MainActor
+    @discardableResult
+    public func willDisplayHeader(
+        _ handler: @escaping (WillDisplayEvent.EventContext) -> Void
+    ) -> Self {
+        var copy = self
+        if header == nil {
+            assertionFailure("Please declare the header first using [withHeader]")
+        }
+        copy.header = header?.willDisplay(handler)
+        return copy
+    }
+    
+    /// Footer가 화면에 표시될 때 호출되는 콜백 핸들러를 등록합니다.
+    ///
+    /// - Parameters:
+    ///   - handler: Footer가 화면에 표시될 때 호출되는 콜백 핸들러
+    @MainActor
+    @discardableResult
+    public func willDisplayFooter(
+        _ handler: @escaping (WillDisplayEvent.EventContext) -> Void
+    ) -> Self {
+        var copy = self
+        if footer == nil {
+            assertionFailure("Please declare the header first using [withFooter]")
+        }
+        copy.footer = footer?.willDisplay(handler)
+        return copy
+    }
+    
+    /// Header가 화면에서 제거될 때 호출되는 콜백 핸들러를 등록합니다.
+    ///
+    /// - Parameters:
+    ///  - handler: Header가 화면에서 제거될 때 호출되는 콜백 핸들러
+    @MainActor
+    public func didEndDisplayHeader(
+        _ handler: @escaping (DidEndDisplayingEvent.EventContext) -> Void
+    ) -> Self {
+        var copy = self
+        if header == nil {
+          assertionFailure("Please declare the header first using [withHeader]")
+        }
+        copy.header = header?.didEndDisplaying(handler)
+        return copy
+    }
+    
+    /// Footer가 화면에서 제거될 때 호출되는 콜백 핸들러를 등록합니다.
+    ///
+    /// - Parameters:
+    ///  - handler: Footer가 화면에서 제거될 때 호출되는 콜백 핸들러
+    @MainActor
+    public func didEndDisplayFooter(
+        _ handler: @escaping (DidEndDisplayingEvent.EventContext) -> Void
+    ) -> Self {
+        var copy = self
+        if footer == nil {
+            assertionFailure("Please declare the footer first using [withFooter]")
+        }
+        copy.footer = footer?.didEndDisplaying(handler)
+        return copy
     }
 }
