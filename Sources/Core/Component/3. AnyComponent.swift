@@ -95,7 +95,7 @@ public struct AnyComponent: Component, Equatable {
     
     private let box: any ComponentBox
     
-    private var baseComponent: any Component {
+    public var baseComponent: any Component {
         box.baseComponent
     }
     

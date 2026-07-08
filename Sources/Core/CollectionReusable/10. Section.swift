@@ -50,6 +50,20 @@ public struct Section: Identifiable, @MainActor ListingViewEventHandler {
         self.cells = cells
         self.eventStorage = ListingViewEventStorage()
     }
+    
+    /// Section을 생성하는 초기화 메서드입니다.
+    ///
+    /// - Parameters:
+    ///  - id: Section을 식별하는 식별자
+    ///  - cells: 화면에 표시될 셀 배열을 생성하는 Builder
+    public init(
+        id: some Hashable,
+        @CellsBuilder _ cells: () -> [Cell]
+    ) {
+        self.id = id
+        self.cells = cells()
+        self.eventStorage = ListingViewEventStorage()
+    }
 }
 
 // MARK: - Layout / Header, Footer
@@ -59,11 +73,38 @@ extension Section {
     ///
     /// - Parameters:
     ///  - sectionLayout: 커스텀 section layout을 제공하는 클로저
+    @MainActor
     public func withSectionLayout(
         _ sectionLayout: CompositionalLayoutSectionFactory.SectionLayout?
     ) -> Self {
         var copy = self
         copy.sectionLayout = sectionLayout
+        return copy
+    }
+    
+    /// Section의 레이아웃을 설정하는 modifier입니다.
+    ///
+    /// - Parameters:
+    ///  - layoutMaker: NSCollectionLayoutSection을 생성하는 factory 객체
+    @MainActor
+    public func withSectionLayout(
+        _ layoutMaker: CompositionalLayoutSectionFactory
+    ) -> Self {
+        var copy = self
+        copy.sectionLayout = layoutMaker.makeSectionLayout()
+        return copy
+    }
+    
+    /// Section의 레이아웃을 설정하는 modifier입니다.
+    ///
+    /// - Parameters:
+    ///  - defaultLayoutMaker: 프레임워크에서 제공하는 기본 레이아웃 factory
+    @MainActor
+    public func withSectionLayout(
+        _ defaultLayoutMaker: DefaultCompositionalLayoutSectionFactory
+    ) -> Self {
+        var copy = self
+        copy.sectionLayout = defaultLayoutMaker.makeSectionLayout()
         return copy
     }
 
@@ -74,6 +115,7 @@ extension Section {
     /// - Parameters:
     ///  - headerComponent: 헤더가 표현할 컴포넌트
     ///  - alignment: 컴포넌트의 정렬 방식
+    @MainActor
     public func withHeader(
         _ headerComponent: some Component,
         alignment: NSRectAlignment = .top
@@ -92,6 +134,7 @@ extension Section {
     /// - Parameters:
     ///  - footerComponent: 푸터가 표현할 컴포넌트
     ///  - alignment: 컴포넌트의 정렬 방식
+    @MainActor
     public func withFooter(
         _ footerComponent: some Component,
         alignment: NSRectAlignment = .top
@@ -106,6 +149,7 @@ extension Section {
     }
     
     /// 실제 NSCollectionLayoutSection을 생성하는 내부 메서드
+    @MainActor
     func layout(
         index: Int,
         enviroment: NSCollectionLayoutEnvironment,

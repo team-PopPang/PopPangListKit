@@ -12,6 +12,14 @@ struct RootView: View {
                         }
                     }
                 }
+                
+                Section("PopPangListKit") {
+                    NavigationLink("example 1") {
+                        ViewControllerRepresentable {
+                            VerticalLayoutVC()
+                        }
+                    }
+                }
             }
             .navigationTitle("Demo")
         }
