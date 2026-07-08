@@ -10,7 +10,7 @@ import Foundation
 public struct List: @MainActor ListingViewEventHandler {
     
     /// Section UI를 표현하는 Section 배열
-    public var setions: [Section]
+    public var sections: [Section]
     let eventStorage = ListingViewEventStorage()
     
     /// List를 생성하는 초기화 메서드입니다.
@@ -18,9 +18,9 @@ public struct List: @MainActor ListingViewEventHandler {
     /// - Parameters:
     ///  - sections: 화면에 표시될 Section 배열
     public init(
-        setions: [Section]
+        sections: [Section]
     ) {
-        self.setions = setions
+        self.sections = sections
     }
     
     /// List를 생성하는 초기화 메서드입니다.
@@ -30,7 +30,7 @@ public struct List: @MainActor ListingViewEventHandler {
     public init(
         @SectionsBuilder _ sections: () -> [Section]
     ) {
-        self.setions = sections()
+        self.sections = sections()
     }
 }
 
