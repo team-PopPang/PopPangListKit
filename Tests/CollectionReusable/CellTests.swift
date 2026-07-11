@@ -66,6 +66,21 @@ struct CellTests {
         #expect(lhs != rhs)
     }
 
+    @Test("Equatable: 같은 id와 item이어도 component 타입이 다르면 다르다")
+    func equatable_sameIDDifferentComponentType() {
+        let item = MockComponent.Item(title: "A")
+        let lhs = Cell(
+            id: "cell-1",
+            component: MockComponent(item: item)
+        )
+        let rhs = Cell(
+            id: "cell-1",
+            component: OtherMockComponent(item: item)
+        )
+
+        #expect(lhs != rhs)
+    }
+
     // MARK: - Hashable
     @Test("Hashable: hash는 id 기준이다")
     func hashable_hashUsesID() {
@@ -159,6 +174,19 @@ private struct MockComponent: Component {
     }
 
     let item: Item
+    let layoutMode: ContentLayoutMode = .fitContainer
+
+    @MainActor
+    func renderContent(coordinator: Void) -> UIView {
+        UIView()
+    }
+
+    @MainActor
+    func render(in content: UIView, coordinator: Void) {}
+}
+
+private struct OtherMockComponent: Component {
+    let item: MockComponent.Item
     let layoutMode: ContentLayoutMode = .fitContainer
 
     @MainActor

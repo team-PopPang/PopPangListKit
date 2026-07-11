@@ -92,21 +92,17 @@ extension VerticalLayoutVC {
                         id: item.id,
                         component: VerticalLayoutComponent(item: item)
                     )
-                    .willDisplay { context in
-                        let model = context.anyComponent.baseComponent.item as! VerticalLayoutComponent.Item
-                        print("표시직전: \(model.title ?? "")")
+                    .willDisplay { _ in
+                        print("표시직전: \(item.title ?? "")")
                     }
-                    .didEndDisplay { context in
-                        let model = context.anyComponent.baseComponent.item as! VerticalLayoutComponent.Item
-                        print("사라짐:  \(model.title ?? "")")
+                    .didEndDisplay { _ in
+                        print("사라짐:  \(item.title ?? "")")
                     }
-                    .onHighlight { context in
-                        let model = context.anyComponent.baseComponent.item as! VerticalLayoutComponent.Item
-                        print("눌림:  \(model.title ?? "")")
+                    .onHighlight { _ in
+                        print("눌림:  \(item.title ?? "")")
                     }
-                    .onUnhighlight { context in
-                        let model = context.anyComponent.baseComponent.item as! VerticalLayoutComponent.Item
-                        print("눌림취소:  \(model.title ?? "")")
+                    .onUnhighlight { _ in
+                        print("눌림취소:  \(item.title ?? "")")
                     }
                 }
             }

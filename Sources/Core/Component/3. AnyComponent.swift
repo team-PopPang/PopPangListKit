@@ -144,6 +144,6 @@ public struct AnyComponent: Component, Equatable {
     }
     
     public static func == (lhs: AnyComponent, rhs: AnyComponent) -> Bool {
-        lhs.item == rhs.item
+        lhs.reuseIdentifier == rhs.reuseIdentifier && lhs.item == rhs.item
     }
 }

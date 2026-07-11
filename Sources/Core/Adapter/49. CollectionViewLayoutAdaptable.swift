@@ -52,7 +52,7 @@ public protocol CollectionViewLayoutAdaptable: AnyObject {
     /// - Returns: 생성된 NSCollectionLayoutSection
     func sectionLayout(
         index: Int,
-        enviroment: NSCollectionLayoutEnvironment
+        environment: NSCollectionLayoutEnvironment
     ) -> NSCollectionLayoutSection?
 }
 
@@ -85,7 +85,7 @@ public class CollectionViewLayoutAdapter: CollectionViewLayoutAdaptable {
     /// - Returns: 생성된 NSCollectionLayoutSection
     public func sectionLayout(
         index: Int,
-        enviroment: NSCollectionLayoutEnvironment
+        environment: NSCollectionLayoutEnvironment
     ) -> NSCollectionLayoutSection? {
         
         // 데이터 소스 없으면 생성 불가
@@ -102,7 +102,7 @@ public class CollectionViewLayoutAdapter: CollectionViewLayoutAdaptable {
         // Section이 가지고 있는 layout 로직으로 실제 NSCollectionLayoutSection 생성
         return sectionItem.layout(
             index: index,
-            enviroment: enviroment,
+            environment: environment,
             sizeStorage: dataSource.sizeStorage()
         )
     }

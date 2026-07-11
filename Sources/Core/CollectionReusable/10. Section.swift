@@ -152,7 +152,7 @@ extension Section {
     @MainActor
     func layout(
         index: Int,
-        enviroment: NSCollectionLayoutEnvironment,
+        environment: NSCollectionLayoutEnvironment,
         sizeStorage: ComponentSizeStorage
     ) -> NSCollectionLayoutSection? {
         
@@ -162,7 +162,7 @@ extension Section {
         }
         
         /// 클로저 설정 -> 실제 레이아웃 생성
-        return sectionLayout?((self, index, enviroment, sizeStorage))
+        return sectionLayout?((self, index, environment, sizeStorage))
     }
 }
 
@@ -256,7 +256,7 @@ extension Section {
     ) -> Self {
         var copy = self
         if footer == nil {
-            assertionFailure("Please declare the header first using [withFooter]")
+            assertionFailure("Please declare the footer first using [withFooter]")
         }
         copy.footer = footer?.willDisplay(handler)
         return copy

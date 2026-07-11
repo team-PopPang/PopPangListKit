@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  RemoteImagePrefetchingPlugin.swift
 //  PopPangListKit
 //
 //  Created by 김동현 on 4/24/26.
@@ -43,9 +43,9 @@ public final class RemoteImagePrefetchingPlugin: CollectionViewPrefetchingPlugin
         
         // AnyCancellable 반환
         // → 이 객체가 해제되거나 cancel되면 모든 프리패치 작업 취소
-        return AnyCancellable { [weak self] in
+        return AnyCancellable { [remoteImagePrefetcher] in
             for uuid in uuids {
-                self?.remoteImagePrefetcher.cancelTask(uuid: uuid)
+                remoteImagePrefetcher.cancelTask(uuid: uuid)
             }
         }
     }

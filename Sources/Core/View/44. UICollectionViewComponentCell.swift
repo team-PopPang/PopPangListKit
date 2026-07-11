@@ -66,6 +66,7 @@ public final class UICollectionViewComponentCell: UICollectionViewCell, Componen
         super.prepareForReuse()
         previousBounds = .zero
         cancellables?.forEach { $0.cancel() }
+        cancellables = nil
     }
     
     /// 레이아웃 완료 후 현재 사이즈 저장 (캐싱용)

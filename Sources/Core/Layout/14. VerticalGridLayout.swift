@@ -72,7 +72,7 @@ public struct VerticalGridLayout: @MainActor CompositionalLayoutSectionFactory {
                     )
                     .max { layout1, layout2 in
                         layout1.layoutSize.heightDimension.dimension <
-                        layout1.layoutSize.heightDimension.dimension
+                        layout2.layoutSize.heightDimension.dimension
                     }?.layoutSize.heightDimension
                     ?? .estimated(context.environment.container.contentSize.height)
                     
@@ -111,7 +111,7 @@ public struct VerticalGridLayout: @MainActor CompositionalLayoutSectionFactory {
             )
             
             /// 줄 간 간격
-            group.interItemSpacing = .fixed(itemSpacing)
+            group.interItemSpacing = .fixed(lineSpacing)
             
             /// 섹션 설정
             let section = NSCollectionLayoutSection(group: group)
