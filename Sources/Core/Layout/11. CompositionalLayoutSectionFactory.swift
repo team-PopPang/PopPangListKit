@@ -108,18 +108,18 @@ extension CompositionalLayoutSectionFactory {
             )
         case .flexibleWidth(let estimatedWidth):
             return .init(
-                widthDimension: .fractionalWidth(estimatedWidth),
+                widthDimension: .estimated(estimatedWidth),
                 heightDimension: .fractionalHeight(1.0)
             )
         case .flexibleHeight(let estimatedHeight):
             return .init(
                 widthDimension: .fractionalWidth(1.0),
-                heightDimension: .fractionalHeight(estimatedHeight)
+                heightDimension: .estimated(estimatedHeight)
             )
         case .fitContent(let estimatedSize):
             return .init(
-                widthDimension: .fractionalWidth(estimatedSize.width),
-                heightDimension: .fractionalHeight(estimatedSize.height)
+                widthDimension: .estimated(estimatedSize.width),
+                heightDimension: .estimated(estimatedSize.height)
             )
         }
     }
@@ -156,18 +156,18 @@ extension CompositionalLayoutSectionFactory {
             )
         case .flexibleWidth:
             return .init(
-                widthDimension: .fractionalWidth(size.width),
+                widthDimension: .estimated(size.width),
                 heightDimension: .fractionalHeight(1.0)
             )
         case .flexibleHeight:
             return .init(
                 widthDimension: .fractionalWidth(1.0),
-                heightDimension: .fractionalHeight(size.height)
+                heightDimension: .estimated(size.height)
             )
         case .fitContent:
             return .init(
-                widthDimension: .fractionalWidth(size.width),
-                heightDimension: .fractionalHeight(size.height)
+                widthDimension: .estimated(size.width),
+                heightDimension: .estimated(size.height)
             )
         }
     }
