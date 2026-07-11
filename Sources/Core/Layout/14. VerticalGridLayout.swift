@@ -85,7 +85,7 @@ public struct VerticalGridLayout: @MainActor CompositionalLayoutSectionFactory {
                             widthDimension: .fractionalWidth(1.0),
                             heightDimension: horizontalGroupHeight
                         ),
-                        repeatingSubitem: NSCollectionLayoutItem(
+                        subitem: NSCollectionLayoutItem(
                             layoutSize: .init(
                                 /// 각 아이템은 동일한 비율로 나눈다
                                 widthDimension: .fractionalWidth(1.0 / CGFloat(numberOfItemsInRow)),

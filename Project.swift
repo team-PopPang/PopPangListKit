@@ -14,7 +14,7 @@ let project = Project(
             destinations: [.iPhone],
             product: .framework,
             bundleId: "com.poppang.poppanglistkit",
-            deploymentTargets: .iOS("17.0"),
+            deploymentTargets: .iOS("13.0"),
             infoPlist: .default,
             sources: ["Sources/**"],
             dependencies: [
@@ -52,7 +52,7 @@ let project = Project(
             destinations: [.iPhone],
             product: .unitTests,
             bundleId: "com.poppang.poppanglistkit.tests",
-            deploymentTargets: .iOS("17.0"),
+            deploymentTargets: .iOS("13.0"),
             infoPlist: .default,
             sources: ["Tests/**"],
             dependencies: [
