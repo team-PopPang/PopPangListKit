@@ -92,6 +92,7 @@ final public class CollectionViewAdapter: NSObject {
     ///   - collectionView: 화면에 표시될 UICollectionView
     ///   - layoutAdapter: 데이터와 레이아웃을 연결하는 어댑터
     ///   - prefetchingPlugins: 리소스 프리패칭 플러그인 목록
+    @MainActor
     public init(
         configuration: CollectionViewAdapterConfiguration,
         collectionView: UICollectionView,

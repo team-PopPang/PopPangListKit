@@ -8,7 +8,7 @@
 import Foundation
 import DifferenceKit
 
-public struct Cell: Identifiable, ListingViewEventHandler {
+public struct Cell: Identifiable, @MainActor ListingViewEventHandler {
     
     /// Cell을 식별하기 위한 ID
     public let id: AnyHashable

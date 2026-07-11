@@ -15,6 +15,7 @@ import UIKit
 /// - Note:
 /// `CollectionViewAdapter`가 이 프로토콜을 채택하여 내부적으로 데이터와 사이즈를 관리하므로,
 /// 일반적으로 직접 구현할 필요는 없다.
+@MainActor
 public protocol CollectionViewLayoutAdapterDataSource: AnyObject {
     
     /// 특정 index에 해당하는 Section을 반환한다
@@ -38,6 +39,7 @@ public protocol CollectionViewLayoutAdapterDataSource: AnyObject {
 /// - Note:
 /// `CollectionViewLayoutAdapter`가 이 프로토콜을 구현하고 있으므로,
 /// 일반적으로 직접 구현할 필요는 없다.
+@MainActor
 public protocol CollectionViewLayoutAdaptable: AnyObject {
     
     /// NSCollectionLayoutSection 생성을 위한 데이터 소스
@@ -69,7 +71,7 @@ public protocol CollectionViewLayoutAdaptable: AnyObject {
 /// )
 /// ```
 @MainActor
-public class CollectionViewLayoutAdapter: @MainActor CollectionViewLayoutAdaptable {
+public class CollectionViewLayoutAdapter: CollectionViewLayoutAdaptable {
     
     /// NSCollectionLayoutSection 생성을 위한 데이터 소스
     public weak var dataSource: CollectionViewLayoutAdapterDataSource?
