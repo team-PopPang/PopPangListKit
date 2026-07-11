@@ -18,10 +18,10 @@ struct PopPangListRepresentable: UIViewControllerRepresentable {
         let viewController = PopPangListViewController(
             configuration: configuration
         )
-        Task { @MainActor in
-            await Task.yield()
-            viewController.apply(list)
-        }
+        context.coordinator.schedule(
+            list: list,
+            viewController: viewController
+        )
         return viewController
     }
     
@@ -29,9 +29,40 @@ struct PopPangListRepresentable: UIViewControllerRepresentable {
         _ viewController: PopPangListViewController,
         context: Context
     ) {
-        Task { @MainActor in
-            await Task.yield()
-            viewController.apply(list)
+        context.coordinator.schedule(
+            list: list,
+            viewController: viewController
+        )
+    }
+}
+
+// MARK: - Coordinator
+extension PopPangListRepresentable {
+    @MainActor
+    final class Coordinator {
+        private var pendingUpdate: Task<Void, Never>?
+
+        func schedule(
+            list: List,
+            viewController: PopPangListViewController
+        ) {
+            // 새로운 상태가 들어올 때 다음 코드로 이전 대기 작업을 취소
+            pendingUpdate?.cancel()
+            pendingUpdate = Task { @MainActor in
+                await Task.yield()
+                guard !Task.isCancelled else {
+                    return
+                }
+                viewController.apply(list)
+            }
         }
+
+        deinit {
+            pendingUpdate?.cancel()
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
     }
 }

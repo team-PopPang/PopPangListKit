@@ -13,7 +13,9 @@ public struct PopPangList: View {
     private let configuration: CollectionViewAdapterConfiguration
     
     public init(
-        configuration: CollectionViewAdapterConfiguration = .init(),
+        configuration: CollectionViewAdapterConfiguration = .init(
+            enablesReconfigureItems: true
+        ),
         @SectionsBuilder content: () -> [Section]
     ) {
         self.configuration = configuration

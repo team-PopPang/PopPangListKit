@@ -36,25 +36,15 @@ struct PopPangInteractiveSwiftUIView: View {
     var body: some View {
         PopPangList {
             Section(id: "interactive") {
-                for item in items {
+                for index in items.indices {
+                    let item = $items[index]
+
                     Cell(
-                        id: item.id,
+                        id: item.wrappedValue.id,
                         item: item,
                         layoutMode: .flexibleHeight(estimatedHeight: 120)
                     ) { item in
-                        InteractiveRow(
-                            item: item,
-                            onToggle: { isEnabled in
-                                updateItem(id: item.id) {
-                                    $0.isEnabled = isEnabled
-                                }
-                            },
-                            onIncrement: {
-                                updateItem(id: item.id) {
-                                    $0.count += 1
-                                }
-                            }
-                        )
+                        InteractiveRow(item: item)
                     }
                 }
             }
@@ -74,23 +64,10 @@ struct PopPangInteractiveSwiftUIView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    @MainActor
-    private func updateItem(
-        id: UUID,
-        update: (inout Item) -> Void
-    ) {
-        guard let index = items.firstIndex(where: { $0.id == id }) else {
-            return
-        }
-
-        update(&items[index])
-    }
 }
 
 private struct InteractiveRow: View {
-    let item: PopPangInteractiveSwiftUIView.Item
-    let onToggle: (Bool) -> Void
-    let onIncrement: () -> Void
+    @Binding var item: PopPangInteractiveSwiftUIView.Item
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -114,15 +91,11 @@ private struct InteractiveRow: View {
             }
 
             HStack(spacing: 16) {
-                Toggle(
-                    "상태",
-                    isOn: Binding(
-                        get: { item.isEnabled },
-                        set: onToggle
-                    )
-                )
+                Toggle("상태", isOn: $item.isEnabled)
 
-                Button("+1", action: onIncrement)
+                Button("+1") {
+                    item.count += 1
+                }
                     .buttonStyle(.borderedProminent)
             }
         }

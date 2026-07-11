@@ -7,6 +7,15 @@
 
 import SwiftUI
 
+private struct SwiftUIBindingItem<Item: Equatable>: Equatable {
+    let value: Item
+    let binding: Binding<Item>
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.value == rhs.value
+    }
+}
+
 /**
  Cell(
      id: item.id,
@@ -33,6 +42,31 @@ extension Cell {
                 item: item,
                 layoutMode: layoutMode,
                 content: content(item)
+            )
+        )
+    }
+}
+
+// 입력 컨트롤은 부모 상태를 직접 읽고 쓸 수 있도록 Binding을 전달합니다.
+extension Cell {
+    @MainActor
+    public init<Item: Equatable, Content: View>(
+        id: some Hashable,
+        item: Binding<Item>,
+        layoutMode: ContentLayoutMode = .flexibleHeight(estimatedHeight: 44),
+        @ViewBuilder content: (Binding<Item>) -> Content
+    ) {
+        let bindingItem = SwiftUIBindingItem(
+            value: item.wrappedValue,
+            binding: item
+        )
+
+        self.init(
+            id: id,
+            component: SwiftUIHostingComponent(
+                item: bindingItem,
+                layoutMode: layoutMode,
+                content: content(bindingItem.binding)
             )
         )
     }
