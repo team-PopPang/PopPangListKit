@@ -71,9 +71,10 @@ extension ComponentRenderable where Self: UIView {
             
             /// 렌더링된 콘텐츠 저장
             renderedContent = content
-            
-            /// 재귀 호출 -> 업데이트 로직 실행
-            render(component: component)
+
+            /// 생성한 뷰에 Component 상태 반영
+            component.render(in: content, coordinator: coordinator ?? ())
+            renderedComponent = component
         }
     }
 }

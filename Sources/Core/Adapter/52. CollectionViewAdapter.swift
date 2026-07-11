@@ -36,7 +36,7 @@ final public class CollectionViewAdapter: NSObject {
     private weak var collectionView: UICollectionView?
     
     /// indexPath별 프리패칭 작업 (취소 가능하도록 저장)
-    private(set) var prefetchingIndexPathOperations = [IndexPath: [AnyCancellable]]()
+    private var prefetchingIndexPathOperations = [IndexPath: [AnyCancellable]]()
     
     /// 프리패칭 플러그인 목록
     private let prefetchingPlugins: [CollectionViewPrefetchingPlugin]

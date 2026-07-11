@@ -12,16 +12,6 @@ struct SwiftUIHostingComponent<Item: Equatable, Content: View>: Component {
     let layoutMode: ContentLayoutMode
     let content: Content
     
-    init(
-        item: Item,
-        layoutMode: ContentLayoutMode,
-        content: Content
-    ) {
-        self.item = item
-        self.layoutMode = layoutMode
-        self.content = content
-    }
-    
     func renderContent(
         coordinator: Void
     ) -> HostingContentView<Content> {

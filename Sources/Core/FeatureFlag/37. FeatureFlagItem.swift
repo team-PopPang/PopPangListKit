@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  TurboListKit
+//  FeatureFlagItem.swift
+//  PopPangListKit
 //
 //  Created by 김동현 on 4/24/26.
 //
@@ -8,7 +8,7 @@
 import Foundation
 
 /// 기능 플래그 항목을 표현하는 구조체입니다.
-public struct FeatureFlagItem {
+public struct FeatureFlagItem: Equatable {
     
     /// 기능 플래그의 타입
     public let type: FeatureFlagType

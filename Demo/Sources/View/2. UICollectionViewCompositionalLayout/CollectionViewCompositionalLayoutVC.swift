@@ -82,11 +82,6 @@ extension CollectionViewCompositionalLayoutVC {
             heightDimension: .absolute(120)
         )
 
-//        let group = NSCollectionLayoutGroup.horizontal(
-//            layoutSize: groupSize,
-//            subitems: [item, item]
-//        )
-        
         let group = NSCollectionLayoutGroup.horizontal(
             layoutSize: groupSize,
             repeatingSubitem: item,

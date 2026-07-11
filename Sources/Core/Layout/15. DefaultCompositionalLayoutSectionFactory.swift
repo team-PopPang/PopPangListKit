@@ -54,10 +54,10 @@ public struct DefaultCompositionalLayoutSectionFactory: @MainActor Compositional
 // MARK: - Static
 extension DefaultCompositionalLayoutSectionFactory {
     /// 기본 세로 레이아웃 생성 (spacing = 0)
-    public static var vertical: Self = .init(spec: .vertical(spacing: 0))
+    public static let vertical: Self = .init(spec: .vertical(spacing: 0))
     
     /// 기본 가로 레이아웃 생성 (spacing = 0, continuous scroll)
-    public static var horizontal: Self = .init(
+    public static let horizontal: Self = .init(
         spec: .horizontal(
             spacing: 0,
             scrollingBehavior: .continuous)

@@ -34,9 +34,9 @@ public protocol ComponentSizeStorage {
 
 final class ComponentSizeStorageImpl: ComponentSizeStorage {
     
-    var cellSizeStore: [AnyHashable: SizeContext] = [:]
-    var headerSizeStore: [AnyHashable: SizeContext] = [:]
-    var footerSizeStore: [AnyHashable: SizeContext] = [:]
+    private var cellSizeStore: [AnyHashable: SizeContext] = [:]
+    private var headerSizeStore: [AnyHashable: SizeContext] = [:]
+    private var footerSizeStore: [AnyHashable: SizeContext] = [:]
     
     @MainActor
     func cellSize(for hash: AnyHashable) -> SizeContext? {
