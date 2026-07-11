@@ -19,6 +19,10 @@ struct RootView: View {
                             VerticalLayoutVC()
                         }
                     }
+                    
+                    NavigationLink("example 2") {
+                        PopPangSwiftUIView()
+                    }
                 }
             }
             .navigationTitle("Demo")
