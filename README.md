@@ -39,7 +39,7 @@ Framework와 Tests는 iOS 13부터 지원합니다. Demo app은 최신 SwiftUI A
 
 ## 설치
 
-Xcode의 **File > Add Package Dependencies...**에서 아래 URL을 추가합니다. 첫 release tag 전에는 `main` branch를 선택합니다.
+Xcode의 **File > Add Package Dependencies...**에서 아래 URL을 추가한 뒤, `1.0.0`부터의 다음 major 버전을 허용하는 규칙을 선택합니다.
 
 ```text
 https://github.com/team-PopPang/PopPangListKit.git
@@ -51,7 +51,7 @@ https://github.com/team-PopPang/PopPangListKit.git
 dependencies: [
     .package(
         url: "https://github.com/team-PopPang/PopPangListKit.git",
-        branch: "main"
+        from: "1.0.0"
     ),
 ],
 targets: [
