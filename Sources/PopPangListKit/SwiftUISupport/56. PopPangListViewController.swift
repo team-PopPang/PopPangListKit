@@ -14,7 +14,8 @@ final class PopPangListViewController: UIViewController {
     private let adapter: CollectionViewAdapter
     
     init(
-        configuration: CollectionViewAdapterConfiguration
+        configuration: CollectionViewAdapterConfiguration,
+        prefetchingPlugins: [CollectionViewPrefetchingPlugin]
     ) {
         let layoutAdapter = CollectionViewLayoutAdapter()
         let collectionView = UICollectionView(layoutAdapter: layoutAdapter)
@@ -24,7 +25,8 @@ final class PopPangListViewController: UIViewController {
         self.adapter = CollectionViewAdapter(
             configuration: configuration,
             collectionView: collectionView,
-            layoutAdapter: layoutAdapter
+            layoutAdapter: layoutAdapter,
+            prefetchingPlugins: prefetchingPlugins
         )
         super.init(nibName: nil, bundle: nil)
     }

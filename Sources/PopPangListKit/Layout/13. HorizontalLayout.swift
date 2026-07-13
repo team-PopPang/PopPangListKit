@@ -12,6 +12,9 @@ import UIKit
 /// 셀의 너비와 높이가 모두 콘텐츠 크기에 맞게 설정되어 있다면,
 /// 이 레이아웃을 가로 스크롤 UI 형태로 사용할 수 있습니다.
 /// - Note: 가로 레이아웃을 사용할 때는 컴포넌트의 레이아웃 모드가 반드시 Fit Content여야 합니다.
+/// - Note: `.paging`, `.groupPaging`, `.groupPagingCentered`,
+///         `.continuousGroupLeadingBoundary`는 모든 cell이 같은 `layoutMode`를
+///         선언한 카드 목록에서 카드 단위 group을 반복합니다.
 @MainActor
 public struct HorizontalLayout: @MainActor CompositionalLayoutSectionFactory {
  
@@ -61,23 +64,49 @@ public struct HorizontalLayout: @MainActor CompositionalLayoutSectionFactory {
      */
     public func makeSectionLayout() -> SectionLayout? {
         { context -> NSCollectionLayoutSection? in
-            
-            /// 가로 방향 그룹 생성
-            let group = NSCollectionLayoutGroup.horizontal(
-                layoutSize: .init(
-                    /// 컨테이너 크기를 기준으로 "추정 너비"설정(동적 콘텐츠 대응)
-                    widthDimension: .estimated(context.environment.container.contentSize.width),
-                    /// 컨테이너 크기를 기준으로 "추정 높이" 설정
-                    heightDimension: .estimated(context.environment.container.contentSize.height)
-                ),
-                subitems: layoutCellItems(
-                    cells: context.section.cells,
-                    sizeStorage: context.sizeStorage
-                )
+            let cellItems = layoutCellItems(
+                cells: context.section.cells,
+                sizeStorage: context.sizeStorage
             )
-            
-            /// 아이템 간 간격 설정
-            group.interItemSpacing = .fixed(spacing)
+            let layoutModes = context.section.cells.map(\.component.layoutMode)
+            let hasUniformLayoutMode: Bool
+            if let firstLayoutMode = layoutModes.first {
+                hasUniformLayoutMode = layoutModes.dropFirst().allSatisfy {
+                    $0 == firstLayoutMode
+                }
+            } else {
+                hasUniformLayoutMode = true
+            }
+            let shouldRepeatItemGroup = usesRepeatingItemGroup
+                && !cellItems.isEmpty
+                && hasUniformLayoutMode
+
+            if usesRepeatingItemGroup, !context.section.cells.isEmpty,
+               !hasUniformLayoutMode {
+                assertionFailure(
+                    "반복 card group 스크롤은 모든 cell에 같은 ContentLayoutMode가 필요합니다."
+                )
+            }
+
+            let group: NSCollectionLayoutGroup
+            if shouldRepeatItemGroup, let item = cellItems.first {
+                /// 하나의 cell layout item을 group template으로 반복합니다.
+                /// Cell의 layoutMode가 카드 크기의 유일한 source입니다.
+                group = NSCollectionLayoutGroup.horizontal(
+                    layoutSize: item.layoutSize,
+                    subitems: [item]
+                )
+            } else {
+                /// 가변 크기 cell을 하나의 가로 group으로 구성하는 기존 경로입니다.
+                group = NSCollectionLayoutGroup.horizontal(
+                    layoutSize: .init(
+                        widthDimension: .estimated(context.environment.container.contentSize.width),
+                        heightDimension: .estimated(context.environment.container.contentSize.height)
+                    ),
+                    subitems: cellItems
+                )
+                group.interItemSpacing = .fixed(spacing)
+            }
             
             /// 섹션 설정
             let section = NSCollectionLayoutSection(group: group)
@@ -94,6 +123,10 @@ public struct HorizontalLayout: @MainActor CompositionalLayoutSectionFactory {
             
             /// 가로 스크롤 활성화
             section.orthogonalScrollingBehavior = scrollingBehavior
+
+            if shouldRepeatItemGroup {
+                section.interGroupSpacing = spacing
+            }
             
             /// 헤더 생성
             let headerItem = layoutHeaderItem(
@@ -124,6 +157,26 @@ public struct HorizontalLayout: @MainActor CompositionalLayoutSectionFactory {
             ].compactMap { $0 }
             
             return section
+        }
+    }
+}
+
+extension HorizontalLayout {
+    /// UIKit의 orthogonal scrolling behavior별 group 구성 전략입니다.
+    ///
+    /// paging 계열은 하나의 카드 group을 반복해야 UIKit이 각 behavior에 맞춰
+    /// 카드 또는 화면 단위로 스크롤을 제어할 수 있습니다.
+    var usesRepeatingItemGroup: Bool {
+        switch scrollingBehavior {
+        case .continuousGroupLeadingBoundary,
+                .paging,
+                .groupPaging,
+                .groupPagingCentered:
+            true
+        case .none, .continuous:
+            false
+        @unknown default:
+            false
         }
     }
 }
