@@ -1,0 +1,11 @@
+.DS_Store
+.build/
+.package.resolved
+.tuist-cache/
+.tuist-generated/
+Derived/
+Tuist/.build/
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+*.xcuserstate

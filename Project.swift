@@ -38,12 +38,10 @@ let project = Project(
             sources: ["Demo/Sources/**"],
             dependencies: [
                 .target(name: "PopPangListKit"),
-                
             ],
             settings: .settings(
                 base: [
                     "CODE_SIGN_STYLE": "Automatic",
-                    "DEVELOPMENT_TEAM": "LGX4B4WC66",
                 ]
             )
         ),

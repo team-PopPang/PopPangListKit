@@ -6,6 +6,21 @@ PopPangListKit은 복잡한 목록에서 UIKit의 통제력과 SwiftUI의 생산
 
 개발자는 `List`, `Section`, `Cell`을 선언합니다. Core는 `UICollectionView`, Compositional Layout, DifferenceKit으로 diff, cell reuse, layout과 scroll event를 처리합니다. 기존 UIKit `Component`와 SwiftUI `View`는 같은 Section, 같은 데이터 snapshot, 같은 업데이트 경로를 공유합니다.
 
+## 목차
+
+- [지원 사양](#지원-사양)
+- [설계 기준](#설계-기준)
+- [왜 만들었나요?](#왜-만들었나요)
+- [빠른 시작](#빠른-시작)
+- [Core 구조](#core-구조)
+- [DifferenceKit을 선택한 이유](#differencekit을-선택한-이유)
+- [핵심 개념](#핵심-개념)
+- [레이아웃과 이벤트](#레이아웃과-이벤트)
+- [SwiftUI 업데이트 전략](#swiftui-업데이트-전략)
+- [트러블슈팅](#트러블슈팅)
+- [Demo](#demo)
+- [디렉터리 구조](#디렉터리-구조)
+
 ## 지원 사양
 
 | 항목 | 사양 |
@@ -19,6 +34,17 @@ PopPangListKit은 복잡한 목록에서 UIKit의 통제력과 SwiftUI의 생산
 | 레이아웃 | Vertical, Horizontal, Vertical Grid, Custom Section |
 
 Framework와 Tests는 iOS 13부터 지원합니다. Demo app은 최신 SwiftUI API를 활용한 예제를 제공하기 위해 iOS 17을 유지합니다.
+
+## 설계 기준
+
+| 기준 | PopPangListKit의 선택 |
+|---|---|
+| 선언 방식 | 화면은 `List -> Section -> Cell` 데이터로 표현합니다. |
+| 렌더링 경로 | `UICollectionView`가 cell reuse, layout, lifecycle을 담당합니다. |
+| 데이터 갱신 | 새 `List` snapshot을 명시적으로 `apply`하고 DifferenceKit으로 변경을 계산합니다. |
+| UIKit과 SwiftUI | 기존 UIKit `Component`와 SwiftUI `View`를 같은 Section에서 함께 사용합니다. |
+| 레이아웃 | Section별 Compositional Layout을 구성해 세로, 가로, 그리드와 custom section을 섞습니다. |
+| 이벤트와 성능 | scroll lifecycle과 prefetch를 modifier/plugin 경계로 연결해 화면 코드에 delegate를 흩뜨리지 않습니다. |
 
 ## 왜 만들었나요?
 
@@ -177,6 +203,17 @@ CollectionViewAdapter
 
 여기서 snapshot은 특정 시점의 `List`, `Section`, `Cell` 상태를 뜻합니다. `NSDiffableDataSourceSnapshot`이나 `UICollectionViewDiffableDataSource`를 사용한다는 의미는 아닙니다. PopPangListKit은 DifferenceKit으로 이전 Core `List`와 새로운 Core `List`를 비교합니다.
 
+| 타입 | 역할 | 주로 사용하는 시점 |
+|---|---|---|
+| `Component` | UIKit View와 Item, 렌더링 규칙을 묶는 최소 단위 | 기존 UIKit 셀 UI를 연결할 때 |
+| `AnyComponent` | 서로 다른 `Component`를 하나의 Cell 모델로 다루는 타입 소거 래퍼 | 목록 내부 저장과 diff 비교 시 |
+| `Cell` | 컬렉션 뷰 아이템 모델 | 아이템 UI와 이벤트를 선언할 때 |
+| `Section` | Cell, header, footer, layout을 묶는 모델 | 섹션별 화면 구조를 만들 때 |
+| `List` | 화면 전체 snapshot과 리스트 이벤트 | 렌더링할 목록 상태를 구성할 때 |
+| `CollectionViewAdapter` | `List`와 `UICollectionView`를 연결하는 어댑터 | UIKit 화면에 목록을 반영할 때 |
+| `CollectionViewLayoutAdapter` | Section 데이터와 Compositional Layout을 연결 | `UICollectionViewCompositionalLayout`을 구성할 때 |
+| `SwiftUIHostingComponent` | SwiftUI View를 기존 Component 경로에 연결 | UIKit과 SwiftUI 셀을 혼합할 때 |
+
 ## DifferenceKit을 선택한 이유
 
 `reloadData()`는 애플리케이션에서 변경점을 계산하지 않고 UICollectionView에 전체 데이터를 다시 요청합니다. DifferenceKit은 Paul Heckel 알고리즘으로 삽입, 삭제, 이동과 갱신을 선형 시간 `O(n)`에 계산하고 결과를 `StagedChangeset`으로 제공합니다.
@@ -190,6 +227,13 @@ PopPangListKit은 계산된 변경을 batch update로 반영합니다. changeset
 | PopPangListKit + DifferenceKit | Core snapshot을 Heckel `O(n)`으로 비교 | `StagedChangeset`의 변경 중심 batch update |
 
 `O(n)`은 DifferenceKit의 diff 계산 복잡도입니다. UIKit의 layout과 rendering을 포함한 전체 업데이트 비용이 항상 `O(n)`이라는 뜻은 아닙니다. 자세한 알고리즘과 benchmark는 [DifferenceKit 공식 저장소](https://github.com/ra1028/DifferenceKit)에서 확인할 수 있습니다.
+
+| 업데이트 방식 | API | 사용 시점 |
+|---|---|---|
+| Animated batch update | `.animatedBatchUpdates` | 일반적인 변경에 animation을 적용할 때 |
+| Non-animated batch update | `.nonanimatedBatchUpdates` | 변경분만 반영하되 animation은 피할 때 |
+| Full reload | `.reloadData` | 변경량이 많거나 안전한 전체 갱신이 필요할 때 |
+| Latest update queue | `CollectionViewAdapter` 내부 큐 | 업데이트 중 새 상태가 오면 가장 최근 snapshot으로 이어갈 때 |
 
 ## 핵심 개념
 
@@ -257,12 +301,14 @@ Section마다 서로 다른 Compositional Layout을 적용할 수 있습니다.
 
 Cell과 List 이벤트도 DSL modifier로 연결합니다.
 
-- Cell selection, highlight, unhighlight
-- will display, did end displaying
-- pull to refresh
-- reach end pagination
-- scroll, dragging, deceleration
-- indexPath 기반 prefetch와 취소 plugin
+| 대상 | API 예시 | 설명 |
+|---|---|---|
+| `List` | `onRefresh`, `onReachEnd` | pull-to-refresh와 페이지네이션 이벤트를 연결합니다. |
+| `List` | `didScroll`, `willBeginDragging`, `didEndDecelerating` | scroll, dragging, deceleration lifecycle을 받습니다. |
+| `Section` | `withHeader`, `withFooter`, `withSectionLayout` | 보조 뷰와 Compositional Layout을 섹션에 붙입니다. |
+| `Cell` | `didSelect`, `onHighlight`, `onUnhighlight` | 아이템 상호작용을 선언합니다. |
+| `Cell` / `SupplementaryView` | `willDisplay`, `didEndDisplaying` | 표시와 재사용 lifecycle을 관찰합니다. |
+| Prefetch plugin | `CollectionViewPrefetchingPlugin` | indexPath 기반 리소스 prefetch와 취소를 확장합니다. |
 
 ```swift
 PopPangList(
@@ -365,7 +411,6 @@ final class Coordinator {
 모듈 디렉터리에서 workspace를 생성하고 Demo scheme을 실행할 수 있습니다.
 
 ```bash
-cd Projects/Shared/PopPangListKit
 tuist generate
 open PopPangListKit.xcworkspace
 ```
@@ -400,6 +445,7 @@ PopPangListKit
 │  └─ Support
 ├─ Demo
 ├─ Tests
+├─ .gitignore
 └─ Project.swift
 ```
 
