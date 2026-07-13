@@ -1,11 +1,7 @@
 .DS_Store
 .build/
-.package.resolved
-.tuist-cache/
-.tuist-generated/
-Derived/
-Tuist/.build/
-*.xcodeproj/
-*.xcworkspace/
+.swiftpm/
+Package.resolved
+Demo/PopPangListKitDemo.xcodeproj/project.xcworkspace/
 xcuserdata/
 *.xcuserstate

@@ -9,6 +9,7 @@ PopPangListKit은 복잡한 목록에서 UIKit의 통제력과 SwiftUI의 생산
 ## 목차
 
 - [지원 사양](#지원-사양)
+- [설치](#설치)
 - [설계 기준](#설계-기준)
 - [왜 만들었나요?](#왜-만들었나요)
 - [빠른 시작](#빠른-시작)
@@ -18,7 +19,7 @@ PopPangListKit은 복잡한 목록에서 UIKit의 통제력과 SwiftUI의 생산
 - [레이아웃과 이벤트](#레이아웃과-이벤트)
 - [SwiftUI 업데이트 전략](#swiftui-업데이트-전략)
 - [트러블슈팅](#트러블슈팅)
-- [Demo](#demo)
+- [Demo 앱](#demo-앱)
 - [디렉터리 구조](#디렉터리-구조)
 
 ## 지원 사양
@@ -32,8 +33,36 @@ PopPangListKit은 복잡한 목록에서 UIKit의 통제력과 SwiftUI의 생산
 | 데이터 갱신 | DifferenceKit 기반 snapshot diff와 batch update |
 | SwiftUI 연결 | `UIViewControllerRepresentable` + `UIHostingController` |
 | 레이아웃 | Vertical, Horizontal, Vertical Grid, Custom Section |
+| 배포 방식 | Swift Package Manager |
 
 Framework와 Tests는 iOS 13부터 지원합니다. Demo app은 최신 SwiftUI API를 활용한 예제를 제공하기 위해 iOS 17을 유지합니다.
+
+## 설치
+
+Xcode의 **File > Add Package Dependencies...**에서 아래 URL을 추가합니다. 첫 release tag 전에는 `main` branch를 선택합니다.
+
+```text
+https://github.com/team-PopPang/PopPangListKit.git
+```
+
+`Package.swift`를 사용하는 프로젝트에서는 다음처럼 연결합니다.
+
+```swift
+dependencies: [
+    .package(
+        url: "https://github.com/team-PopPang/PopPangListKit.git",
+        branch: "main"
+    ),
+],
+targets: [
+    .target(
+        name: "YourTarget",
+        dependencies: [
+            .product(name: "PopPangListKit", package: "PopPangListKit"),
+        ]
+    ),
+]
+```
 
 ## 설계 기준
 
@@ -398,9 +427,9 @@ final class Coordinator {
 
 아직 시작하지 않은 apply는 pending Task 취소로 병합하고, 이미 시작된 UICollectionView 업데이트 중 들어온 최신 요청은 `CollectionViewAdapter.queuedUpdate`가 이어서 처리합니다.
 
-## Demo
+## Demo 앱
 
-[Demo](./Demo)는 다음 예제를 제공합니다.
+[Demo](./Demo)는 독립적인 iOS 앱이며, [PopPangListKitDemo.xcodeproj](./Demo/PopPangListKitDemo.xcodeproj)를 열어 실행할 수 있습니다. Demo는 상위 `Package.swift`를 local package dependency로 연결합니다.
 
 - UIKit Component 기반 Vertical Layout
 - UIKit Component와 SwiftUI View 혼합
@@ -408,19 +437,12 @@ final class Coordinator {
 - Toggle과 Button을 포함한 Binding Cell
 - UICollectionView Compositional Layout 비교 화면
 
-모듈 디렉터리에서 workspace를 생성하고 Demo scheme을 실행할 수 있습니다.
-
-```bash
-tuist generate
-open PopPangListKit.xcworkspace
-```
-
-CLI 빌드는 다음 명령으로 검증합니다.
+CLI 빌드는 다음 명령으로 검증할 수 있습니다.
 
 ```bash
 xcodebuild \
-  -workspace PopPangListKit.xcworkspace \
-  -scheme PopPangListKit-Workspace \
+  -project Demo/PopPangListKitDemo.xcodeproj \
+  -scheme PopPangListKitDemo \
   -configuration Debug \
   -sdk iphonesimulator \
   -destination 'generic/platform=iOS Simulator' \
@@ -432,6 +454,7 @@ xcodebuild \
 
 ```text
 PopPangListKit
+├─ Package.swift
 ├─ Sources
 │  ├─ Core
 │  │  ├─ Adapter
@@ -444,9 +467,10 @@ PopPangListKit
 │  │  └─ SwiftUISupport
 │  └─ Support
 ├─ Demo
+│  ├─ PopPangListKitDemo.xcodeproj
+│  └─ Sources
 ├─ Tests
-├─ .gitignore
-└─ Project.swift
+└─ .gitignore
 ```
 
 PopPangListKit은 SwiftUI를 대체하지 않습니다. 단순하고 정적인 목록은 SwiftUI `List`나 `LazyVStack`으로 충분합니다. 복잡한 목록에서 업데이트 경로를 예측하고 튜닝해야 할 때 UICollectionView Core와 선언형 DSL을 함께 제공하는 것이 이 모듈의 역할입니다.
