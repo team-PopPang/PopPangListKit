@@ -24,13 +24,11 @@ let package = Package(
             name: "PopPangListKit",
             dependencies: [
                 .product(name: "DifferenceKit", package: "DifferenceKit"),
-            ],
-            path: "Sources"
+            ]
         ),
         .testTarget(
             name: "PopPangListKitTests",
-            dependencies: ["PopPangListKit"],
-            path: "Tests"
+            dependencies: ["PopPangListKit"]
         ),
     ]
 )
