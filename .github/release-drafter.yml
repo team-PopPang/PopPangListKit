@@ -1,0 +1,40 @@
+# `main`에 병합된 PR을 하나의 Draft Release에 누적합니다.
+# Draft를 검토한 뒤 GitHub Releases 화면에서 Publish합니다.
+# major 버전은 Draft 검토 단계 또는 기존 Release 워크플로에서 직접 결정합니다.
+
+name-template: '$RESOLVED_VERSION'
+tag-template: '$RESOLVED_VERSION'
+
+categories:
+  - title: '✨ 새로운 기능이 추가되었어요'
+    semver-increment: minor
+    when:
+      label: '✨ feature'
+  - title: '🐞 자잘한 버그를 수정했어요'
+    semver-increment: patch
+    when:
+      labels:
+        - '🔧 fix'
+        - '🔥 hotfix'
+  - title: '🛠 코드를 개선했어요'
+    semver-increment: patch
+    when:
+      labels:
+        - '⚙️ chore'
+        - '🔨 refactor'
+        - '✅ test'
+        - '📃 docs'
+  - title: '기타 변경'
+    semver-increment: patch
+
+change-template: '- $TITLE by @$AUTHOR in #$NUMBER'
+change-title-escapes: '\\<*_&'
+sort-by: merged_at
+sort-direction: descending
+
+template: |
+  ## 이번 버전의 변경사항은 아래와 같아요
+
+  $CHANGES
+
+no-changes-template: '변경사항이 없어요.'
