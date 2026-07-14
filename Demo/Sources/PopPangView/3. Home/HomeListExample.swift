@@ -24,17 +24,15 @@ struct HomeListExample: View {
     var body: some View {
         PopPangList {
             Section(id: "featured") {
-                for card in featuredCards {
-                    Cell(
-                        id: card.id,
-                        item: card,
-                        layoutMode: .fitContent(
-                            estimatedSize: .init(width: 194, height: 172)
-                        )
-                    ) { card in
-                        HomeCardView(card: card, color: .purple)
-                            .frame(width: 194, height: 172)
-                    }
+                For(
+                    featuredCards,
+                    id: \.id,
+                    layoutMode: .fitContent(
+                        estimatedSize: .init(width: 194, height: 172)
+                    )
+                ) { card in
+                    HomeCardView(card: card, color: .purple)
+                        .frame(width: 194, height: 172)
                 }
             }
             .withHeader {
@@ -53,17 +51,15 @@ struct HomeListExample: View {
             )
 
             Section(id: "coming") {
-                for card in comingCards {
-                    Cell(
-                        id: card.id,
-                        item: card,
-                        layoutMode: .fitContent(
-                            estimatedSize: .init(width: 282, height: 126)
-                        )
-                    ) { card in
-                        HomeCardView(card: card, color: .orange)
-                            .frame(width: 282, height: 126)
-                    }
+                For(
+                    comingCards,
+                    id: \.id,
+                    layoutMode: .fitContent(
+                        estimatedSize: .init(width: 282, height: 126)
+                    )
+                ) { card in
+                    HomeCardView(card: card, color: .orange)
+                        .frame(width: 282, height: 126)
                 }
             }
             .withHeader {
@@ -82,18 +78,16 @@ struct HomeListExample: View {
             )
 
             Section(id: "grid") {
-                for card in gridCards {
-                    Cell(
-                        id: card.id,
-                        item: card,
-                        layoutMode: .flexibleHeight(estimatedHeight: 172)
-                    ) { card in
-                        HomeGridCard(card: card)
-                            .frame(height: 172)
-                    }
-                    .didSelect { _ in
-                        toggleFavorite(for: card.id)
-                    }
+                For(
+                    gridCards,
+                    id: \.id,
+                    layoutMode: .flexibleHeight(estimatedHeight: 172)
+                ) { card in
+                    HomeGridCard(card: card)
+                        .frame(height: 172)
+                }
+                .didSelect { card in
+                    toggleFavorite(for: card.id)
                 }
             }
             .withHeader {

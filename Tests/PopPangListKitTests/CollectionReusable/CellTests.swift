@@ -181,7 +181,77 @@ struct CellTests {
         #expect(first.id == updated.id)
         #expect(first != updated)
     }
+
+    // MARK: - SwiftUI For
+    @Test("For는 데이터마다 Cell을 만들고 id를 사용한다")
+    @MainActor
+    func swiftUIForMakesCellsWithElementIDs() {
+        let items = [
+            ForItem(id: "first", title: "첫 번째"),
+            ForItem(id: "second", title: "두 번째"),
+        ]
+
+        let section = Section(id: "items") {
+            For(items, id: \.id) { item in
+                Text(item.title)
+            }
+        }
+
+        #expect(section.cells.map(\.id) == ["first", "second"])
+    }
+
+    @Test("For는 Element가 변경되면 같은 id의 Cell 변경을 감지한다")
+    @MainActor
+    func swiftUIForDetectsElementChanges() {
+        let before = Section(id: "items") {
+            For([ForItem(id: "first", title: "이전")], id: \.id) { item in
+                Text(item.title)
+            }
+        }
+        let after = Section(id: "items") {
+            For([ForItem(id: "first", title: "이후")], id: \.id) { item in
+                Text(item.title)
+            }
+        }
+
+        #expect(before.cells[0].differenceIdentifier == after.cells[0].differenceIdentifier)
+        #expect(!before.cells[0].isContentEqual(to: after.cells[0]))
+    }
+
+    @Test("For의 didSelect는 선택된 원본 Element를 전달한다")
+    @MainActor
+    func swiftUIForPassesSelectedElement() {
+        let item = ForItem(id: "first", title: "첫 번째")
+        var selectedID: String?
+
+        let section = Section(id: "items") {
+            For([item], id: \.id) { item in
+                Text(item.title)
+            }
+            .didSelect { selectedItem in
+                selectedID = selectedItem.id
+            }
+        }
+
+        guard let event = section.cells[0].event(for: DidSelectEvent.self) else {
+            Issue.record("For가 didSelect 이벤트를 등록해야 합니다.")
+            return
+        }
+
+        event.handler(
+            .init(
+                indexPath: .init(item: 0, section: 0),
+                anyComponent: section.cells[0].component
+            )
+        )
+
+        #expect(selectedID == item.id)
+    }
 }
+
+private struct ForItem: Equatable {
+    let id: String
+    let title: String
 
 private struct MockComponent: Component {
     struct Item: Equatable {
