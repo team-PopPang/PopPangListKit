@@ -6,13 +6,31 @@ PopPangListKit은 복잡한 목록에서 UIKit의 통제력과 SwiftUI의 생산
 
 개발자는 `List`, `Section`, `Cell`을 선언합니다. Core는 `UICollectionView`, Compositional Layout, DifferenceKit으로 diff, cell reuse, layout과 scroll event를 처리합니다. 기존 UIKit `Component`와 SwiftUI `View`는 같은 Section, 같은 데이터 snapshot, 같은 업데이트 경로를 공유합니다.
 
+## 왜 만들었나요?
+
+SwiftUI `List`는 표준 목록을 빠르게 구현할 때 적합합니다. 데이터 규모가 크지 않고 디자인 자유도가 중요하다면 `ScrollView + LazyVStack`도 좋은 선택입니다.
+
+목록이 커지고 interaction이 복잡해지면 다른 문제가 생깁니다. Section별 세로·가로·그리드 배치, 동적 높이, 원격 이미지 prefetch, pagination, scroll lifecycle과 실시간 데이터 반영을 함께 다루려면 데이터와 셀이 갱신되는 과정을 예측할 수 있어야 합니다.
+
+UIKit에서는 데이터 상태를 명시적으로 적용하고 diff 결과를 batch update로 반영할 수 있습니다. cell reuse와 delegate lifecycle도 드러나므로 병목을 측정하고 업데이트 전략을 조정할 수 있습니다. 반면 화면마다 data source와 delegate를 다시 구현하면 코드가 늘고 동작이 분산됩니다.
+
+PopPangListKit은 목록의 뼈대를 `UICollectionView`로 유지하면서 SwiftUI와 유사한 선언형 작성 경험을 제공합니다.
+
+| 선택 | 적합한 화면 | 감수할 점 |
+|---|---|---|
+| SwiftUI `List` | swipe, edit, selection 같은 플랫폼 기본 목록 기능이 중요한 화면 | 여백, 배경, 구분선 같은 기본 규칙을 커스텀 디자인에서 우회해야 할 수 있음 |
+| `ScrollView + LazyVStack` | 카드형 피드처럼 디자인 자유도가 중요한 화면 | swipe, edit, selection, separator를 직접 구현해야 함 |
+| `UICollectionView` | 데이터 갱신, cell reuse, prefetch와 scroll lifecycle을 예측하고 튜닝해야 하는 화면 | data source, delegate, diff와 이벤트 연결 코드가 늘어남 |
+| PopPangListKit | 선언형 문법과 UICollectionView의 통제력이 모두 필요한 화면 | UIKit Core 위에서 UIKit Component와 SwiftUI View를 함께 사용 |
+
+PopPangListKit은 SwiftUI `List`의 모든 기능을 복제하지 않습니다. SwiftUI의 선언형 작성 경험과 UICollectionView의 명시적인 렌더링 경로를 하나의 DSL로 결합합니다.
+
 ## 목차
 
 - [지원 사양](#지원-사양)
 - [기능 지원표](#기능-지원표)
 - [설치](#설치)
 - [설계 기준](#설계-기준)
-- [왜 만들었나요?](#왜-만들었나요)
 - [빠른 시작](#빠른-시작)
 - [Core 구조](#core-구조)
 - [DifferenceKit을 선택한 이유](#differencekit을-선택한-이유)
@@ -119,25 +137,6 @@ targets: [
 | UIKit과 SwiftUI | 기존 UIKit `Component`와 SwiftUI `View`를 같은 Section에서 함께 사용합니다. |
 | 레이아웃 | Section별 Compositional Layout을 구성해 세로, 가로, 그리드와 custom section을 섞습니다. |
 | 이벤트와 성능 | scroll lifecycle과 prefetch를 modifier/plugin 경계로 연결해 화면 코드에 delegate를 흩뜨리지 않습니다. |
-
-## 왜 만들었나요?
-
-SwiftUI `List`는 표준 목록을 빠르게 구현할 때 적합합니다. 데이터 규모가 크지 않고 디자인 자유도가 중요하다면 `ScrollView + LazyVStack`도 좋은 선택입니다.
-
-목록이 커지고 interaction이 복잡해지면 다른 문제가 생깁니다. Section별 세로·가로·그리드 배치, 동적 높이, 원격 이미지 prefetch, pagination, scroll lifecycle과 실시간 데이터 반영을 함께 다루려면 데이터와 셀이 갱신되는 과정을 예측할 수 있어야 합니다.
-
-UIKit에서는 데이터 상태를 명시적으로 적용하고 diff 결과를 batch update로 반영할 수 있습니다. cell reuse와 delegate lifecycle도 드러나므로 병목을 측정하고 업데이트 전략을 조정할 수 있습니다. 반면 화면마다 data source와 delegate를 다시 구현하면 코드가 늘고 동작이 분산됩니다.
-
-PopPangListKit은 목록의 뼈대를 `UICollectionView`로 유지하면서 SwiftUI와 유사한 선언형 작성 경험을 제공합니다.
-
-| 선택 | 적합한 화면 | 감수할 점 |
-|---|---|---|
-| SwiftUI `List` | swipe, edit, selection 같은 플랫폼 기본 목록 기능이 중요한 화면 | 여백, 배경, 구분선 같은 기본 규칙을 커스텀 디자인에서 우회해야 할 수 있음 |
-| `ScrollView + LazyVStack` | 카드형 피드처럼 디자인 자유도가 중요한 화면 | swipe, edit, selection, separator를 직접 구현해야 함 |
-| `UICollectionView` | 데이터 갱신, cell reuse, prefetch와 scroll lifecycle을 예측하고 튜닝해야 하는 화면 | data source, delegate, diff와 이벤트 연결 코드가 늘어남 |
-| PopPangListKit | 선언형 문법과 UICollectionView의 통제력이 모두 필요한 화면 | UIKit Core 위에서 UIKit Component와 SwiftUI View를 함께 사용 |
-
-PopPangListKit은 SwiftUI `List`의 모든 기능을 복제하지 않습니다. SwiftUI의 선언형 작성 경험과 UICollectionView의 명시적인 렌더링 경로를 하나의 DSL로 결합합니다.
 
 ## 빠른 시작
 
@@ -351,7 +350,11 @@ PopPangListKit은 계산된 변경을 batch update로 반영합니다. changeset
 
 ### Component
 
-`Component`는 PopPangListKit의 최소 렌더링 단위입니다. Cell 데이터인 `Item`, 실제 UIKit View인 `Content`, 필요한 경우 View와 외부 상태를 연결하는 `Coordinator`를 하나의 계약으로 묶습니다.
+`Component`는 PopPangListKit에서 화면에 표시할 데이터와 동작을 선언하는 가장 작은 단위입니다. Cell 데이터인 `Item`, 실제 UIKit View인 `Content`, 필요한 경우 View와 외부 상태를 연결하는 `Coordinator`를 하나의 계약으로 묶습니다.
+
+개발자는 화면마다 `UICollectionViewCell`이나 `UICollectionReusableView`를 subclass로 만들 필요가 없습니다. 대신 Component를 작성하고 `Cell`, Header, Footer에 넣습니다. 목록은 공통 렌더링 Cell이 처리하고, Component는 화면에 필요한 View와 데이터 갱신 규칙만 정의합니다.
+
+`Component`의 생성, 갱신, Coordinator 계약은 `UIViewRepresentable`과 비슷합니다. UIKit Component와 SwiftUI View는 같은 Section, snapshot, 업데이트 경로를 공유하므로 화면을 SwiftUI로 전환할 때 목록 구조와 갱신 로직을 다시 만들 필요가 없습니다.
 
 ```swift
 public protocol Component {
@@ -371,6 +374,56 @@ public protocol Component {
 ```
 
 `renderContent`는 재사용할 View를 처음 만들 때 호출하고, `render`는 같은 View에 새로운 Item을 반영할 때 호출합니다. View 생성과 상태 업데이트를 분리해 UICollectionView가 Cell을 재사용할 때마다 View hierarchy를 다시 만들지 않습니다.
+
+#### UIKit Component 작성하기
+
+`item`에는 화면에 표시할 값, `Content`에는 실제 UIKit View, `render`에는 Item을 View에 반영하는 코드를 둡니다.
+
+```swift
+import PopPangListKit
+import UIKit
+
+struct TitleComponent: Component {
+    let item: String
+
+    var layoutMode: ContentLayoutMode {
+        .flexibleHeight(estimatedHeight: 44)
+    }
+
+    func renderContent(coordinator: Void) -> UILabel {
+        let label = UILabel()
+        label.font = .preferredFont(forTextStyle: .body)
+        label.numberOfLines = 0
+        return label
+    }
+
+    func render(in content: UILabel, coordinator: Void) {
+        content.text = item
+    }
+}
+
+let cell = Cell(
+    id: "notice",
+    component: TitleComponent(item: "새로운 팝업이 등록되었어요.")
+)
+```
+
+Adapter는 처음 렌더링할 때 `makeCoordinator`, `renderContent`, `layout`, `render`를 차례로 호출합니다. 재사용한 Cell에는 새 View를 만들지 않고 `render`만 호출합니다. 기본 `layout`은 Content를 컨테이너의 네 변에 고정합니다. 다른 제약 조건이나 View 계층이 필요할 때만 `layout(content:in:)`을 구현합니다.
+
+`item`은 `Equatable`이어야 합니다. 기본 `reuseIdentifier`는 Component 타입 이름입니다. 따라서 같은 Cell ID에서 `item`이나 Component 타입이 바뀌면 DifferenceKit이 콘텐츠 변경으로 판단해 Cell을 갱신합니다.
+
+#### layoutMode와 실제 크기
+
+`layoutMode`는 Compositional Layout이 처음 사용할 추정 크기와 Content가 늘어날 축을 정합니다. 표시 과정에서는 `sizeThatFits(_:)`로 실제 크기를 측정하고, Adapter가 그 값을 다음 layout 계산에 사용합니다.
+
+| `ContentLayoutMode` | 너비 | 높이 | 적합한 UI |
+|---|---|---|---|
+| `.fitContainer` | 컨테이너에 맞춤 | 컨테이너에 맞춤 | 배경을 포함해 Cell 전체를 채우는 UI |
+| `.flexibleHeight(estimatedHeight:)` | 컨테이너에 맞춤 | Content에 맞춤 | 일반적인 세로 목록 Cell |
+| `.flexibleWidth(estimatedWidth:)` | Content에 맞춤 | 컨테이너에 맞춤 | 가로 목록의 높이가 정해진 카드 |
+| `.fitContent(estimatedSize:)` | Content에 맞춤 | Content에 맞춤 | 너비와 높이가 모두 가변인 태그·카드 |
+
+`sizeThatFits(_:)`를 직접 구현하면 동적 크기를 더 정확하게 계산할 수 있습니다. 추정값은 첫 layout을 위한 값이므로, 실제 Content 크기와 비슷하게 지정하는 편이 좋습니다.
 
 ### AnyComponent
 
