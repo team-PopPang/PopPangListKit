@@ -90,7 +90,8 @@ jobs:
 
           gh release create "$VERSION" \
             --title "$VERSION" \
-            --notes "Release $VERSION"
+            --generate-notes \
+            --latest
 
       - name: Move existing tag
         if: inputs.operation == 'retag-release'
