@@ -9,6 +9,7 @@ PopPangListKit은 복잡한 목록에서 UIKit의 통제력과 SwiftUI의 생산
 ## 목차
 
 - [지원 사양](#지원-사양)
+- [기능 지원표](#기능-지원표)
 - [설치](#설치)
 - [설계 기준](#설계-기준)
 - [왜 만들었나요?](#왜-만들었나요)
@@ -37,9 +38,53 @@ PopPangListKit은 복잡한 목록에서 UIKit의 통제력과 SwiftUI의 생산
 
 Framework와 Tests는 iOS 13부터 지원합니다. Demo app은 최신 SwiftUI API를 활용한 예제를 제공하기 위해 iOS 17을 유지합니다.
 
+## 기능 지원표
+
+두 화면은 같은 `List`, `Section`, `Cell` DSL과 Compositional Layout을 공유합니다. 표의 UIKit은 `CollectionViewAdapter`를 직접 연결하는 화면이고, SwiftUI는 `PopPangList`를 사용하는 화면입니다.
+
+### UIKit 화면
+
+| 구분 | API | 설명 |
+|---|---|---|
+| 목록 연결과 갱신 | `CollectionViewAdapter`, `adapter.apply(List)` | `UICollectionView`를 직접 만들고 원하는 시점에 새 List snapshot을 적용합니다. |
+| UIKit Cell | `Cell(id:component:)` | `Component`로 `UIView` Cell을 렌더링합니다. |
+| SwiftUI Cell | `Cell(id:item:content:)` | UIKit 목록 안에서도 SwiftUI View를 Cell로 렌더링합니다. |
+| UIKit Header / Footer | `.withHeader(Component)`, `.withFooter(Component)` | `Component` 기반 supplementary view를 표시합니다. |
+| SwiftUI Header / Footer | `.withHeader(item:) { ... }`, `.withFooter(item:) { ... }` | SwiftUI View를 supplementary view로 렌더링합니다. `item`은 변경 감지용 `Equatable` 데이터입니다. |
+| Cell 크기 | `ContentLayoutMode` | `.fitContainer`, `.flexibleHeight`, `.flexibleWidth`, `.fitContent`을 지원합니다. |
+| Section Layout | `VerticalLayout`, `HorizontalLayout`, `VerticalGridLayout`, `DefaultCompositionalLayoutSectionFactory`, custom factory | 세로 목록, 가로 목록, 그리드, 기본 factory, custom Compositional Layout을 섞습니다. |
+| 가로 스크롤 | `HorizontalLayout(scrollingBehavior:)` | `.none`, `.continuous`, `.continuousGroupLeadingBoundary`, `.paging`, `.groupPaging`, `.groupPagingCentered`을 지원합니다. |
+| Header / Footer 고정 | `.headerPinToVisibleBounds`, `.footerPinToVisibleBounds` | 스크롤 중 supplementary view를 화면 경계에 고정합니다. |
+| visible item 변경 | `.withVisibleItemsInvalidationHandler` | 스크롤 위치와 visible item 변화에 맞춰 layout item을 조정합니다. |
+| Cell·Supplementary 이벤트 | `.didSelect`, `.onHighlight`, `.willDisplay`, `.willDisplayHeader` 등 | Cell 선택·highlight와 Cell·Header·Footer의 표시·제거 lifecycle을 받습니다. |
+| List scroll lifecycle | `didScroll`, `willBeginDragging`, `willEndDragging` 등 | 전체 UIScrollView lifecycle과 scroll-to-top 여부를 제어합니다. |
+| 새로고침과 페이지네이션 | `onRefresh`, `onReachEnd` | RefreshControl과 목록 끝 감지를 연결합니다. |
+| 업데이트 전략 | `CollectionViewAdapterConfiguration` | batch update 임계값, refresh UI, `reconfigureItems` 사용 여부를 설정합니다. |
+| 리소스 prefetch | `CollectionViewPrefetchingPlugin`, `RemoteImagePrefetchingPlugin` | UIKit Component의 이미지·리소스 prefetch와 취소를 확장합니다. |
+
+### SwiftUI 화면
+
+| 구분 | API | 설명 |
+|---|---|---|
+| 목록 연결과 갱신 | `PopPangList { ... }` | SwiftUI `body`가 다시 계산되면 새 List snapshot을 자동 적용합니다. |
+| 값 기반 SwiftUI Cell | `Cell(id:item:content:)` | `Equatable` Item이 바뀌면 Cell 콘텐츠를 갱신합니다. |
+| Binding SwiftUI Cell | `Cell(id:item: Binding, content:)` | `Toggle`, `TextField`처럼 양방향 상태가 필요한 Cell에 사용합니다. |
+| 정적 SwiftUI Cell | `Cell(id:content:)` | 표시만 하는 고정 콘텐츠를 렌더링합니다. 동적 값에는 값 기반 Cell을 사용합니다. |
+| UIKit Component Cell | `Cell(id:component:)` | SwiftUI 화면에서도 기존 UIKit Component를 함께 사용합니다. |
+| UIKit Header / Footer | `.withHeader(Component)`, `.withFooter(Component)` | 기존 UIKit supplementary view를 그대로 사용합니다. |
+| SwiftUI Header / Footer | `.withHeader(item:) { ... }`, `.withFooter(item:) { ... }` | SwiftUI View를 Section Header·Footer로 사용합니다. |
+| Layout과 가로 스크롤 | UIKit 화면과 동일 | Vertical, Horizontal, Grid, 기본·custom layout과 6개 `scrollingBehavior`를 동일하게 사용합니다. |
+| visible item 변경 | `.withVisibleItemsInvalidationHandler` | 스크롤 위치와 visible item 변화에 맞춰 layout item을 조정합니다. |
+| Cell·Section 이벤트 | UIKit 화면과 동일 | Cell 상호작용, 표시 lifecycle, Header·Footer lifecycle을 modifier로 연결합니다. |
+| List scroll lifecycle | UIKit 화면과 동일 | `onRefresh`, `onReachEnd`, `didScroll`, dragging·deceleration lifecycle, scroll-to-top 제어를 동일하게 사용합니다. |
+| 업데이트 전략 | `PopPangList(configuration:)` | iOS 15 이상에서는 `reconfigureItems`를 기본으로 사용합니다. |
+| 리소스 prefetch | `PopPangList(prefetchingPlugins:)` | UIKit Component가 제공하는 이미지·리소스 prefetch plugin을 연결합니다. |
+
+SwiftUI `Cell`, Header, Footer도 UIKit 렌더링 경로를 사용합니다. 따라서 두 화면은 cell reuse, DifferenceKit diff, Compositional Layout을 동일하게 공유합니다.
+
 ## 설치
 
-Xcode의 **File > Add Package Dependencies...**에서 아래 URL을 추가합니다. 첫 release tag 전에는 `main` branch를 선택합니다.
+Xcode의 **File > Add Package Dependencies...**에서 아래 URL을 추가한 뒤, `1.0.0`부터의 다음 major 버전을 허용하는 규칙을 선택합니다.
 
 ```text
 https://github.com/team-PopPang/PopPangListKit.git
@@ -51,7 +96,7 @@ https://github.com/team-PopPang/PopPangListKit.git
 dependencies: [
     .package(
         url: "https://github.com/team-PopPang/PopPangListKit.git",
-        branch: "main"
+        from: "1.0.0"
     ),
 ],
 targets: [
@@ -212,6 +257,44 @@ PopPangList {
     }
 }
 ```
+
+### 홈 카드 레이아웃
+
+카드 크기는 `Cell`의 `layoutMode`에서만 선언합니다. 같은 `layoutMode`를 가진 카드에서 `.paging`, `.groupPaging`, `.groupPagingCentered`, `.continuousGroupLeadingBoundary`를 사용하면 `HorizontalLayout`이 카드 하나를 반복 group으로 구성합니다.
+
+```swift
+let headerTitle = "오픈 예정"
+
+PopPangList {
+    Section(id: "coming") {
+        for popup in popups {
+            Cell(
+                id: popup.id,
+                item: popup,
+                layoutMode: .fitContent(
+                    estimatedSize: .init(width: 283, height: 138)
+                )
+            ) { popup in
+                PopupCard(popup: popup)
+                    .frame(width: 283, height: 138)
+            }
+        }
+    }
+    .withHeader(item: headerTitle) {
+        Text(headerTitle)
+            .font(.headline)
+    }
+    .withSectionLayout(
+        HorizontalLayout(
+            spacing: 15,
+            scrollingBehavior: .groupPaging
+        )
+        .insets(.init(top: 0, leading: 20, bottom: 24, trailing: 20))
+    )
+}
+```
+
+가변 크기 cell을 섞는 일반 가로 목록은 `.continuous`를 사용합니다. `.none`은 가로 스크롤 없이 같은 가로 group을 배치합니다. 전체 조합 예제는 Demo 앱의 `example 4 - Home list`에서 확인할 수 있습니다.
 
 ## Core 구조
 
@@ -436,6 +519,7 @@ final class Coordinator {
 - 새로고침과 무한 스크롤
 - Toggle과 Button을 포함한 Binding Cell
 - UICollectionView Compositional Layout 비교 화면
+- 기존 layoutMode로 구성한 Home list 화면
 
 CLI 빌드는 다음 명령으로 검증할 수 있습니다.
 

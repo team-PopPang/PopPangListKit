@@ -11,21 +11,25 @@ import SwiftUI
 public struct PopPangList: View {
     private var list: List
     private let configuration: CollectionViewAdapterConfiguration
+    private let prefetchingPlugins: [CollectionViewPrefetchingPlugin]
     
     public init(
         configuration: CollectionViewAdapterConfiguration = .init(
             enablesReconfigureItems: true
         ),
+        prefetchingPlugins: [CollectionViewPrefetchingPlugin] = [],
         @SectionsBuilder content: () -> [Section]
     ) {
         self.configuration = configuration
+        self.prefetchingPlugins = prefetchingPlugins
         self.list = List(sections: content())
     }
     
     public var body: some View {
         PopPangListRepresentable(
             list: list,
-            configuration: configuration
+            configuration: configuration,
+            prefetchingPlugins: prefetchingPlugins
         )
         // .ignoresSafeArea(.container, edges: [])
     }
@@ -69,6 +73,54 @@ extension PopPangList {
     ) -> Self {
         var copy = self
         copy.list = copy.list.didEndDecelerating(handler)
+        return copy
+    }
+
+    public func willBeginDragging(
+        _ handler: @escaping (WillBeginDraggingEvent.EventContext) -> Void
+    ) -> Self {
+        var copy = self
+        copy.list = copy.list.willBeginDragging(handler)
+        return copy
+    }
+
+    public func willEndDragging(
+        _ handler: @escaping (WillEndDraggingEvent.EventContext) -> Void
+    ) -> Self {
+        var copy = self
+        copy.list = copy.list.willEndDragging(handler)
+        return copy
+    }
+
+    public func didEndDragging(
+        _ handler: @escaping (DidEndDraggingEvent.EventContext) -> Void
+    ) -> Self {
+        var copy = self
+        copy.list = copy.list.didEndDragging(handler)
+        return copy
+    }
+
+    public func didScrollToTop(
+        _ handler: @escaping (DidScrollToTopEvent.EventContext) -> Void
+    ) -> Self {
+        var copy = self
+        copy.list = copy.list.didScrollToTop(handler)
+        return copy
+    }
+
+    public func willBeginDecelerating(
+        _ handler: @escaping (WillBeginDeceleratingEvent.EventContext) -> Void
+    ) -> Self {
+        var copy = self
+        copy.list = copy.list.willBeginDecelerating(handler)
+        return copy
+    }
+
+    public func shouldScrollToTop(
+        _ handler: @escaping (ShouldScrollToTopEvent.EventContext) -> Bool
+    ) -> Self {
+        var copy = self
+        copy.list = copy.list.shouldScrollToTop(handler)
         return copy
     }
 }

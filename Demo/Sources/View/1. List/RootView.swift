@@ -27,6 +27,10 @@ struct RootView: View {
                     NavigationLink("example 3 - Interactive SwiftUI cells") {
                         PopPangInteractiveSwiftUIView()
                     }
+
+                    NavigationLink("example 4 - Home list") {
+                        HomeListExample()
+                    }
                 }
             }
             .navigationTitle("Demo")

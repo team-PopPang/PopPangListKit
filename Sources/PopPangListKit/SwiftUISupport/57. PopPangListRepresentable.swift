@@ -11,12 +11,14 @@ import SwiftUI
 struct PopPangListRepresentable: UIViewControllerRepresentable {
     let list: List
     let configuration: CollectionViewAdapterConfiguration
+    let prefetchingPlugins: [CollectionViewPrefetchingPlugin]
     
     func makeUIViewController(
         context: Context
     ) -> PopPangListViewController {
         let viewController = PopPangListViewController(
-            configuration: configuration
+            configuration: configuration,
+            prefetchingPlugins: prefetchingPlugins
         )
         context.coordinator.schedule(
             list: list,

@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 import Testing
 @testable import PopPangListKit
 
@@ -91,6 +92,30 @@ struct SupplementaryViewTests {
         )
 
         #expect(lhs != rhs)
+    }
+
+    @Test("SwiftUI header는 기존 supplementary model로 생성된다")
+    @MainActor
+    func swiftUIHeader() {
+        let header = SupplementaryView.header(item: "추천 팝업") { title in
+            Text(title)
+        }
+
+        #expect(header.kind == UICollectionView.elementKindSectionHeader)
+        #expect(header.alignment == .top)
+    }
+
+    @Test("SwiftUI header의 item이 달라지면 변경으로 판단한다")
+    @MainActor
+    func swiftUIHeaderDetectsItemChange() {
+        let first = SupplementaryView.header(item: "첫 번째") { title in
+            Text(title)
+        }
+        let updated = SupplementaryView.header(item: "두 번째") { title in
+            Text(title)
+        }
+
+        #expect(first != updated)
     }
 }
 
