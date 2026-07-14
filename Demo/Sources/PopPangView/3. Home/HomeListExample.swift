@@ -20,9 +20,11 @@ struct HomeListExample: View {
     @State private var gridCards = (1...18).map {
         Card(id: $0, title: "그리드 \($0)", subtitle: "2열 카드")
     }
+    @State private var listProxy = PopPangListProxy()
+    @State private var isTopAnchorVisible = false
 
     var body: some View {
-        PopPangList {
+        PopPangList(proxy: listProxy) {
             Section(id: "featured") {
                 For(featuredCards, id: \.id) { card in
                     HomeCardView(card: card, color: .purple)
@@ -112,6 +114,28 @@ struct HomeListExample: View {
                 .insets(.init(top: 0, leading: 20, bottom: 24, trailing: 20))
                 .headerPinToVisibleBounds(true)
             )
+        }
+        .didScroll { context in
+            isTopAnchorVisible = context.collectionView.contentOffset.y > 240
+        }
+        .overlay(alignment: .bottomTrailing) {
+            if isTopAnchorVisible {
+                Button {
+                    listProxy.scrollToSection(
+                        id: "grid",
+                        position: .top,
+                        animated: true
+                    )
+                } label: {
+                    Image(systemName: "arrow.up")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .frame(width: 48, height: 48)
+                        .background(.blue, in: Circle())
+                }
+                .padding(20)
+                .accessibilityLabel("전체 팝업으로 이동")
+            }
         }
         .navigationTitle("Home List")
         .navigationBarTitleDisplayMode(.inline)

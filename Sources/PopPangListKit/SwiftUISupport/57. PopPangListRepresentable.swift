@@ -12,6 +12,11 @@ struct PopPangListRepresentable: UIViewControllerRepresentable {
     let list: List
     let configuration: CollectionViewAdapterConfiguration
     let prefetchingPlugins: [CollectionViewPrefetchingPlugin]
+
+    // MARK: - SwiftUI+
+
+    /// SwiftUI 화면이 소유하는 프로그램 스크롤 proxy입니다.
+    let proxy: PopPangListProxy?
     
     func makeUIViewController(
         context: Context
@@ -22,7 +27,8 @@ struct PopPangListRepresentable: UIViewControllerRepresentable {
         )
         context.coordinator.schedule(
             list: list,
-            viewController: viewController
+            viewController: viewController,
+            proxy: proxy
         )
         return viewController
     }
@@ -33,30 +39,67 @@ struct PopPangListRepresentable: UIViewControllerRepresentable {
     ) {
         context.coordinator.schedule(
             list: list,
-            viewController: viewController
+            viewController: viewController,
+            proxy: proxy
         )
     }
+
 }
 
 // MARK: - Coordinator
 extension PopPangListRepresentable {
+    static func dismantleUIViewController(
+        _ viewController: PopPangListViewController,
+        coordinator: Coordinator
+    ) {
+        coordinator.dismantle(viewController)
+    }
+
     @MainActor
     final class Coordinator {
         private var pendingUpdate: Task<Void, Never>?
 
+        // MARK: - SwiftUI+
+
+        /// 현재 UIViewController와 연결된 proxy입니다.
+        private weak var attachedProxy: PopPangListProxy?
+
         func schedule(
             list: List,
-            viewController: PopPangListViewController
+            viewController: PopPangListViewController,
+            proxy: PopPangListProxy?
         ) {
+            updateProxy(proxy, for: viewController)
+
             // 새로운 상태가 들어올 때 다음 코드로 이전 대기 작업을 취소
             pendingUpdate?.cancel()
-            pendingUpdate = Task { @MainActor in
+            pendingUpdate = Task { @MainActor [weak viewController] in
                 await Task.yield()
-                guard !Task.isCancelled else {
+                guard !Task.isCancelled, let viewController else {
                     return
                 }
                 viewController.apply(list)
             }
+        }
+
+        func dismantle(_ viewController: PopPangListViewController) {
+            pendingUpdate?.cancel()
+            pendingUpdate = nil
+            attachedProxy?.detach(viewController)
+            attachedProxy = nil
+        }
+
+        private func updateProxy(
+            _ proxy: PopPangListProxy?,
+            for viewController: PopPangListViewController
+        ) {
+            guard attachedProxy !== proxy else {
+                return
+            }
+
+            attachedProxy?.detach(viewController)
+            proxy?.attach(viewController)
+            attachedProxy = proxy
         }
 
         deinit {

@@ -10,7 +10,7 @@ import UIKit
 @MainActor
 final class PopPangListViewController: UIViewController {
     private let layoutAdapter: CollectionViewLayoutAdapter
-    private let collectionView: UICollectionView
+    let collectionView: UICollectionView
     private let adapter: CollectionViewAdapter
     
     init(
@@ -58,5 +58,23 @@ final class PopPangListViewController: UIViewController {
     func apply(_ list: List) {
         loadViewIfNeeded()
         adapter.apply(list)
+    }
+}
+
+extension PopPangListViewController: PopPangListScrollControlling {
+    func scrollToTop(animated: Bool) -> Bool {
+        adapter.scrollToTop(animated: animated)
+    }
+
+    func scrollToSection(
+        id: AnyHashable,
+        position: PopPangListScrollPosition,
+        animated: Bool
+    ) -> Bool {
+        adapter.scrollToSection(
+            id: id,
+            position: position,
+            animated: animated
+        )
     }
 }

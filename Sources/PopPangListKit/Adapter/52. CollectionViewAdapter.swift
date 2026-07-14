@@ -912,6 +912,47 @@ extension CollectionViewAdapter: UICollectionViewDataSource {
 
 extension CollectionViewAdapter {
 
+    /// 실제 콘텐츠의 최상단으로 이동합니다.
+    @discardableResult
+    func scrollToTop(animated: Bool) -> Bool {
+        guard let collectionView else {
+            return false
+        }
+
+        collectionView.setContentOffset(
+            .init(
+                x: collectionView.contentOffset.x,
+                y: -collectionView.adjustedContentInset.top
+            ),
+            animated: animated
+        )
+        return true
+    }
+
+    /// 최신 List snapshot에서 section ID를 찾아 첫 번째 Cell로 이동합니다.
+    @discardableResult
+    func scrollToSection(
+        id: AnyHashable,
+        position: PopPangListScrollPosition,
+        animated: Bool
+    ) -> Bool {
+        guard let collectionView,
+              let list,
+              let sectionIndex = list.sections.firstIndex(where: { $0.id == id }),
+              list.sections[sectionIndex].cells.isEmpty == false
+        else {
+            return false
+        }
+
+        collectionView.layoutIfNeeded()
+        collectionView.scrollToItem(
+            at: .init(item: 0, section: sectionIndex),
+            at: position.collectionViewScrollPosition,
+            animated: animated
+        )
+        return true
+    }
+
     private func configureRefreshControlAppearance() {
         guard
             let refreshControl = collectionView?.refreshControl,

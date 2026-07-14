@@ -12,26 +12,36 @@ public struct PopPangList: View {
     private var list: List
     private let configuration: CollectionViewAdapterConfiguration
     private let prefetchingPlugins: [CollectionViewPrefetchingPlugin]
-    
-    public init(
-        configuration: CollectionViewAdapterConfiguration = .init(
-            enablesReconfigureItems: true
-        ),
-        prefetchingPlugins: [CollectionViewPrefetchingPlugin] = [],
-        @SectionsBuilder content: () -> [Section]
-    ) {
-        self.configuration = configuration
-        self.prefetchingPlugins = prefetchingPlugins
-        self.list = List(sections: content())
-    }
+
+    // MARK: - SwiftUI+
+
+    /// SwiftUI 화면에서 프로그램 스크롤 명령을 전달할 proxy입니다.
+    private let proxy: PopPangListProxy?
     
     public var body: some View {
         PopPangListRepresentable(
             list: list,
             configuration: configuration,
-            prefetchingPlugins: prefetchingPlugins
+            prefetchingPlugins: prefetchingPlugins,
+            proxy: proxy
         )
         // .ignoresSafeArea(.container, edges: [])
+    }
+}
+
+extension PopPangList {
+    public init(
+        configuration: CollectionViewAdapterConfiguration = .init(
+            enablesReconfigureItems: true
+        ),
+        prefetchingPlugins: [CollectionViewPrefetchingPlugin] = [],
+        proxy: PopPangListProxy? = nil,
+        @SectionsBuilder content: () -> [Section]
+    ) {
+        self.configuration = configuration
+        self.prefetchingPlugins = prefetchingPlugins
+        self.proxy = proxy
+        self.list = List(sections: content())
     }
 }
 
