@@ -23,7 +23,9 @@ extension ScrollOverlayVisibility {
         adjustedContentInsetTop: CGFloat,
         viewportHeight: CGFloat
     ) -> Bool {
-        let offsetY = max(0, contentOffsetY - adjustedContentInsetTop)
+        // UICollectionView starts at -adjustedContentInset.top, so add the inset
+        // to measure the distance travelled from the actual content top.
+        let offsetY = max(0, contentOffsetY + adjustedContentInsetTop)
         return offsetY > threshold(viewportHeight: viewportHeight)
     }
 

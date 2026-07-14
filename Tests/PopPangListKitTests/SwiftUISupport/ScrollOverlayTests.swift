@@ -5,21 +5,21 @@ import UIKit
 
 @Suite("ScrollOverlay Tests")
 struct ScrollOverlayTests {
-    @Test("relativeToViewport는 adjustedContentInset을 제외한 세로 offset으로 계산한다")
+    @Test("relativeToViewport는 adjustedContentInset을 반영한 콘텐츠 이동 거리로 계산한다")
     @MainActor
     func calculatesRelativeToViewportVisibility() {
         let state = ScrollOverlayVisibilityState()
         state.update(visibleWhen: .relativeToViewport(1.5))
 
         state.update(
-            contentOffsetY: 320,
+            contentOffsetY: 280,
             adjustedContentInsetTop: 20,
             viewportHeight: 200
         )
         #expect(!state.isVisible)
 
         state.update(
-            contentOffsetY: 321,
+            contentOffsetY: 281,
             adjustedContentInsetTop: 20,
             viewportHeight: 200
         )
@@ -33,14 +33,14 @@ struct ScrollOverlayTests {
         state.update(visibleWhen: .points(120))
 
         state.update(
-            contentOffsetY: 140,
+            contentOffsetY: 100,
             adjustedContentInsetTop: 20,
             viewportHeight: 10
         )
         #expect(!state.isVisible)
 
         state.update(
-            contentOffsetY: 141,
+            contentOffsetY: 101,
             adjustedContentInsetTop: 20,
             viewportHeight: 1_000
         )
