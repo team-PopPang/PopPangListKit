@@ -1,6 +1,6 @@
-# `main`에 병합된 PR을 하나의 Draft Release에 누적합니다.
+# Draft Release는 workflow input으로 지정한 버전과 대상 브랜치에 생성합니다.
+# `name-template`, `tag-template`은 `main` push 자동 실행을 다시 켰을 때의 기본값입니다.
 # Draft를 검토한 뒤 GitHub Releases 화면에서 Publish합니다.
-# major 버전은 Draft 검토 단계 또는 기존 Release 워크플로에서 직접 결정합니다.
 
 name-template: '$RESOLVED_VERSION'
 tag-template: '$RESOLVED_VERSION'
