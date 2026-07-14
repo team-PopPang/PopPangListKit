@@ -31,8 +31,10 @@ where Data: RandomAccessCollection,
 
     private let data: Data
     private let id: KeyPath<Data.Element, ID>
-    private let layoutMode: ContentLayoutMode
     private let content: (Data.Element) -> Content
+    private var cellLayoutMode: ContentLayoutMode = .flexibleHeight(
+        estimatedHeight: 44
+    )
     private var didSelectHandler: ((Data.Element) -> Void)?
 
     /// 데이터를 반복해 SwiftUI Cell을 만듭니다.
@@ -40,18 +42,23 @@ where Data: RandomAccessCollection,
     /// - Parameters:
     ///   - data: Cell로 표시할 `Equatable` 데이터 컬렉션입니다.
     ///   - id: 각 Cell을 식별할 Element의 KeyPath입니다.
-    ///   - layoutMode: 생성되는 모든 Cell에 적용할 크기 규칙입니다.
     ///   - content: Element를 SwiftUI View로 표현하는 클로저입니다.
     public init(
         _ data: Data,
         id: KeyPath<Data.Element, ID>,
-        layoutMode: ContentLayoutMode = .flexibleHeight(estimatedHeight: 44),
         @ViewBuilder content: @escaping (Data.Element) -> Content
     ) {
         self.data = data
         self.id = id
-        self.layoutMode = layoutMode
         self.content = content
+    }
+
+    /// 생성되는 모든 Cell의 크기 규칙을 설정합니다.
+    @discardableResult
+    public func layoutMode(_ layoutMode: ContentLayoutMode) -> Self {
+        var copy = self
+        copy.cellLayoutMode = layoutMode
+        return copy
     }
 
     /// 생성되는 Cell의 선택 이벤트를 Element와 함께 처리합니다.
@@ -72,7 +79,7 @@ where Data: RandomAccessCollection,
             let cell = Cell(
                 id: element[keyPath: id],
                 item: element,
-                layoutMode: layoutMode,
+                layoutMode: cellLayoutMode,
                 content: content
             )
 

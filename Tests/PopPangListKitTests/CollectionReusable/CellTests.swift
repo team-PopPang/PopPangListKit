@@ -218,6 +218,32 @@ struct CellTests {
         #expect(!before.cells[0].isContentEqual(to: after.cells[0]))
     }
 
+    @Test("For의 layoutMode modifier는 생성되는 모든 Cell에 적용된다")
+    @MainActor
+    func swiftUIForAppliesLayoutModeToAllCells() {
+        let layoutMode = ContentLayoutMode.fitContent(
+            estimatedSize: .init(width: 194, height: 271)
+        )
+        let section = Section(id: "items") {
+            For(
+                [
+                    ForItem(id: "first", title: "첫 번째"),
+                    ForItem(id: "second", title: "두 번째"),
+                ],
+                id: \.id
+            ) { item in
+                Text(item.title)
+            }
+            .layoutMode(layoutMode)
+        }
+
+        #expect(
+            section.cells.allSatisfy {
+                $0.component.layoutMode == layoutMode
+            }
+        )
+    }
+
     @Test("For의 didSelect는 선택된 원본 Element를 전달한다")
     @MainActor
     func swiftUIForPassesSelectedElement() {
@@ -252,6 +278,7 @@ struct CellTests {
 private struct ForItem: Equatable {
     let id: String
     let title: String
+}
 
 private struct MockComponent: Component {
     struct Item: Equatable {
