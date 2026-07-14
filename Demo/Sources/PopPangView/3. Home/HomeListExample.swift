@@ -24,21 +24,20 @@ struct HomeListExample: View {
     var body: some View {
         PopPangList {
             Section(id: "featured") {
-                For(
-                    featuredCards,
-                    id: \.id,
-                    layoutMode: .fitContent(
-                        estimatedSize: .init(width: 194, height: 172)
-                    )
-                ) { card in
+                For(featuredCards, id: \.id) { card in
                     HomeCardView(card: card, color: .purple)
                         .frame(width: 194, height: 172)
                 }
+                .layoutMode(
+                    .fitContent(
+                        estimatedSize: .init(width: 194, height: 172)
+                    )
+                )
             }
             .withHeader {
                 HomeSectionHeader(
                     title: "추천 \(featuredCards.count)개",
-                    subtitle: "기존 Cell layoutMode로 카드 크기를 선언합니다"
+                    subtitle: "For layoutMode modifier로 카드 크기를 선언합니다"
                 )
             }
             .withSectionLayout(
@@ -51,16 +50,15 @@ struct HomeListExample: View {
             )
 
             Section(id: "coming") {
-                For(
-                    comingCards,
-                    id: \.id,
-                    layoutMode: .fitContent(
-                        estimatedSize: .init(width: 282, height: 126)
-                    )
-                ) { card in
+                For(comingCards, id: \.id) { card in
                     HomeCardView(card: card, color: .orange)
                         .frame(width: 282, height: 126)
                 }
+                .layoutMode(
+                    .fitContent(
+                        estimatedSize: .init(width: 282, height: 126)
+                    )
+                )
             }
             .withHeader {
                 HomeSectionHeader(
@@ -78,14 +76,11 @@ struct HomeListExample: View {
             )
 
             Section(id: "grid") {
-                For(
-                    gridCards,
-                    id: \.id,
-                    layoutMode: .flexibleHeight(estimatedHeight: 172)
-                ) { card in
+                For(gridCards, id: \.id) { card in
                     HomeGridCard(card: card)
                         .frame(height: 172)
                 }
+                .layoutMode(.flexibleHeight(estimatedHeight: 172))
                 .didSelect { card in
                     toggleFavorite(for: card.id)
                 }
