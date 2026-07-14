@@ -1,5 +1,5 @@
 //
-//  PopPangListProxy.swift
+//  ListProxy.swift
 //  PopPangListKit
 //
 //  Created by 김동현 on 7/14/26.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-/// `PopPangListProxy`가 section으로 이동할 때 사용할 정렬 위치입니다.
+/// `ListProxy`가 section으로 이동할 때 사용할 정렬 위치입니다.
 public enum PopPangListScrollPosition: Hashable, Sendable {
     case top
     case centeredVertically
@@ -51,7 +51,7 @@ protocol PopPangListScrollControlling: AnyObject {
 /// `@State`에서 생성해 `PopPangList(proxy:)`에 전달하세요. 아직 mount되지 않았거나
 /// 제거된 List에는 명령을 대기시키지 않고 `false`를 반환합니다.
 @MainActor
-public final class PopPangListProxy {
+public final class ListProxy {
     // MARK: - SwiftUI+
 
     /// 현재 연결된 List controller입니다. 순환 참조를 막기 위해 약하게 보관합니다.
@@ -60,7 +60,7 @@ public final class PopPangListProxy {
     public init() {}
 }
 
-extension PopPangListProxy {
+extension ListProxy {
     /// 실제 콘텐츠의 최상단으로 이동합니다.
     ///
     /// `adjustedContentInset.top`을 반영합니다. List가 아직 mount되지 않았거나 이미
@@ -100,3 +100,9 @@ extension PopPangListProxy {
         self.scrollController = nil
     }
 }
+
+/// `ListProxy`의 이전 이름입니다.
+///
+/// 기존 호출부는 source-compatible하게 유지되지만, 새 코드에서는 `ListProxy`를 사용하세요.
+@available(*, deprecated, renamed: "ListProxy")
+public typealias PopPangListProxy = ListProxy

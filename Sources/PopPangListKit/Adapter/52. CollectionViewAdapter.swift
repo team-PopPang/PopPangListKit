@@ -59,6 +59,11 @@ final public class CollectionViewAdapter: NSObject {
     
     /// 현재 화면에 반영된 데이터 상태
     var list: List?
+
+    // MARK: - SwiftUI+
+
+    /// SwiftUI scroll overlay의 표시 상태를 갱신하는 observer입니다.
+    private weak var scrollOverlayVisibilityState: ScrollOverlayVisibilityState?
     
     /// pull-to-refresh 컨트롤
     private lazy var pullToRefreshControl: UIRefreshControl = {
@@ -601,6 +606,8 @@ extension CollectionViewAdapter {
                 collectionView: collectionView
             )
         )
+
+        refreshScrollOverlay()
         
         manuallyCheckReachedEndEventIfNeeded()
     }
@@ -914,6 +921,7 @@ extension CollectionViewAdapter {
 
     /// 실제 콘텐츠의 최상단으로 이동합니다.
     @discardableResult
+    @MainActor
     func scrollToTop(animated: Bool) -> Bool {
         guard let collectionView else {
             return false
@@ -926,11 +934,13 @@ extension CollectionViewAdapter {
             ),
             animated: animated
         )
+        refreshScrollOverlay()
         return true
     }
 
     /// 최신 List snapshot에서 section ID를 찾아 첫 번째 Cell로 이동합니다.
     @discardableResult
+    @MainActor
     func scrollToSection(
         id: AnyHashable,
         position: PopPangListScrollPosition,
@@ -950,7 +960,33 @@ extension CollectionViewAdapter {
             at: position.collectionViewScrollPosition,
             animated: animated
         )
+        refreshScrollOverlay()
         return true
+    }
+
+    // MARK: - SwiftUI+
+    @MainActor
+    func configureScrollOverlay(
+        _ configuration: ScrollOverlayConfiguration?
+    ) {
+        scrollOverlayVisibilityState = configuration?.state
+        scrollOverlayVisibilityState?.update(
+            visibleWhen: configuration?.visibleWhen
+        )
+        refreshScrollOverlay()
+    }
+
+    @MainActor
+    func refreshScrollOverlay() {
+        guard let collectionView else {
+            return
+        }
+
+        scrollOverlayVisibilityState?.update(
+            contentOffsetY: collectionView.contentOffset.y,
+            adjustedContentInsetTop: collectionView.adjustedContentInset.top,
+            viewportHeight: collectionView.bounds.height
+        )
     }
 
     private func configureRefreshControlAppearance() {
