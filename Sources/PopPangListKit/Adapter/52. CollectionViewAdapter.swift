@@ -872,6 +872,7 @@ extension CollectionViewAdapter: UICollectionViewDataSource {
             }
             
             headerView.render(component: header.component)
+            headerView.applySupplementaryBackgroundColor(header.backgroundColor)
             
             return headerView
             
@@ -899,6 +900,7 @@ extension CollectionViewAdapter: UICollectionViewDataSource {
             }
             
             footerView.render(component: footer.component)
+            footerView.applySupplementaryBackgroundColor(footer.backgroundColor)
             
             return footerView
             

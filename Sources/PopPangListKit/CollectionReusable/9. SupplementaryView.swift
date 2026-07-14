@@ -17,6 +17,14 @@ public struct SupplementaryView: Equatable, @MainActor ListingViewEventHandler {
     
     /// 보조 뷰의 정렬 위치
     public let alignment: NSRectAlignment
+
+    // MARK: - SwiftUI+
+
+    /// supplementary view의 전체 폭 배경색입니다.
+    ///
+    /// 지정하면 `UICollectionComponentReusableView`가 콘텐츠 frame은 유지한 채,
+    /// collection view의 전체 폭을 덮는 배경을 렌더링합니다.
+    public var backgroundColor: UIColor?
     
     /// 이벤트 저장소
     let eventStorage = ListingViewEventStorage()
@@ -29,12 +37,14 @@ public struct SupplementaryView: Equatable, @MainActor ListingViewEventHandler {
         self.kind = kind
         self.component = AnyComponent(component: component)
         self.alignment = alignment
+        self.backgroundColor = nil
     }
     
     public static func == (lhs: SupplementaryView, rhs: SupplementaryView) -> Bool {
         lhs.kind == rhs.kind &&
         lhs.component == rhs.component &&
-        lhs.alignment == rhs.alignment
+        lhs.alignment == rhs.alignment &&
+        lhs.backgroundColor == rhs.backgroundColor
     }
 }
 

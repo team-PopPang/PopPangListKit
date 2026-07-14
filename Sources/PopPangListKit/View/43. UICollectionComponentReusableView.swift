@@ -38,6 +38,9 @@ public final class UICollectionComponentReusableView: UICollectionReusableView, 
     
     /// 이전 bounds 크기를 저장 (사이즈 캐싱 비교용)
     private var previousBounds: CGSize = .zero
+
+    /// Section inset 밖까지 확장되는 supplementary 배경 뷰
+    private(set) var fullBleedBackgroundView: UIView?
     
     /// storyboard/xib 사용 방지
     @available(*, unavailable)
@@ -49,6 +52,7 @@ public final class UICollectionComponentReusableView: UICollectionReusableView, 
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = .clear
+        clipsToBounds = false
     }
     
     // MARK: - Override Methods
@@ -73,6 +77,14 @@ public final class UICollectionComponentReusableView: UICollectionReusableView, 
         
         /// 이전 사이즈 초기화(재사용 시 캐시 리셋)
         previousBounds = .zero
+        applySupplementaryBackgroundColor(nil)
+    }
+
+    /// dequeue된 supplementary view가 collection view 계층에 들어온 뒤에도
+    /// full-bleed background의 좌표를 다시 계산합니다.
+    public override func didMoveToSuperview() {
+        super.didMoveToSuperview()
+        setNeedsLayout()
     }
     
     /// 레이아웃 변경 시 호출됨
@@ -81,6 +93,7 @@ public final class UICollectionComponentReusableView: UICollectionReusableView, 
         
         /// 현재 bounds 저장 (다음 비교용)
         previousBounds = bounds.size
+        layoutFullBleedBackgroundView()
     }
     
     /// AutoLayout / CompositionalLayout에서 셀 사이즈 계산 시 호출됨
@@ -114,5 +127,67 @@ public final class UICollectionComponentReusableView: UICollectionReusableView, 
         /// 계산된 사이즈 적용
         attributes.frame.size = size
         return attributes
+    }
+
+    /// supplementary view의 배경을 설정합니다.
+    ///
+    /// 콘텐츠는 기존 bounds에 계속 배치하고, 배경만 collection view 좌우 전체 폭으로
+    /// 확장합니다. Header와 Footer가 동일한 재사용 뷰를 사용하므로 두 종류에 공통으로
+    /// 적용됩니다.
+    func applySupplementaryBackgroundColor(_ color: UIColor?) {
+        backgroundColor = color ?? .clear
+        isOpaque = (color?.cgColor.alpha ?? 0) >= 1
+
+        guard let color else {
+            fullBleedBackgroundView?.removeFromSuperview()
+            fullBleedBackgroundView = nil
+            return
+        }
+
+        let backgroundView = fullBleedBackgroundView ?? UIView()
+        backgroundView.backgroundColor = color
+        backgroundView.isOpaque = isOpaque
+        backgroundView.isUserInteractionEnabled = false
+
+        if backgroundView.superview == nil {
+            insertSubview(backgroundView, at: 0)
+        }
+
+        fullBleedBackgroundView = backgroundView
+        setNeedsLayout()
+    }
+
+    /// 현재 supplementary view가 속한 collection view 폭으로 배경을 확장합니다.
+    private func layoutFullBleedBackgroundView() {
+        guard let fullBleedBackgroundView else {
+            return
+        }
+
+        guard let collectionView = nearestCollectionView() else {
+            fullBleedBackgroundView.frame = bounds
+            return
+        }
+
+        let frameInCollectionView = convert(bounds, to: collectionView)
+        fullBleedBackgroundView.frame = CGRect(
+            x: -frameInCollectionView.minX,
+            y: 0,
+            width: collectionView.bounds.width,
+            height: bounds.height
+        )
+    }
+
+    private func nearestCollectionView() -> UICollectionView? {
+        var candidate = superview
+
+        while let view = candidate {
+            if let collectionView = view as? UICollectionView {
+                return collectionView
+            }
+
+            candidate = view.superview
+        }
+
+        return nil
     }
 }

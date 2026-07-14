@@ -2,6 +2,14 @@ import SwiftUI
 import UIKit
 
 extension SupplementaryView {
+    /// supplementary view의 전체 폭 배경색을 설정합니다.
+    @MainActor
+    public func background(_ color: UIColor?) -> Self {
+        var copy = self
+        copy.backgroundColor = color
+        return copy
+    }
+
     /// 기존 Component 기반 supplementary 렌더링 경로에 SwiftUI View를 연결합니다.
     public static func swiftUI<Item: Equatable, Content: View>(
         kind: String,
@@ -97,6 +105,39 @@ extension SupplementaryView {
 }
 
 extension Section {
+    /// Header의 배경을 collection view 전체 폭으로 확장합니다.
+    ///
+    /// Header 콘텐츠와 Cell에 적용된 section inset은 유지합니다. 일반 Header와 고정
+    /// Header 모두에서 section inset 바깥을 배경으로 덮을 때 사용하세요.
+    @MainActor
+    public func headerBackground(_ color: UIColor?) -> Self {
+        var copy = self
+
+        guard let header else {
+            assertionFailure("Please declare the header first using [withHeader]")
+            return copy
+        }
+
+        copy.header = header.background(color)
+        return copy
+    }
+
+    /// Footer의 배경을 collection view 전체 폭으로 확장합니다.
+    ///
+    /// Footer 콘텐츠와 Cell에 적용된 section inset은 유지합니다.
+    @MainActor
+    public func footerBackground(_ color: UIColor?) -> Self {
+        var copy = self
+
+        guard let footer else {
+            assertionFailure("Please declare the footer first using [withFooter]")
+            return copy
+        }
+
+        copy.footer = footer.background(color)
+        return copy
+    }
+
     /// `item` 없이 SwiftUI Section Header를 선언합니다.
     ///
     /// Header가 외부 SwiftUI 상태를 직접 캡처할 때 사용합니다.

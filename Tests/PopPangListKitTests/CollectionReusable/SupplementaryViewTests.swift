@@ -94,6 +94,27 @@ struct SupplementaryViewTests {
         #expect(lhs != rhs)
     }
 
+    @Test("background를 지정하지 않으면 기존 transparent supplementary 상태를 유지한다")
+    func hasNoBackgroundByDefault() {
+        let view = SupplementaryView(
+            kind: "header",
+            component: MockComponent(item: .init(title: "A")),
+            alignment: .top
+        )
+
+        #expect(view.backgroundColor == nil)
+    }
+
+    @Test("UIKit Component Header에 full-bleed background를 선언할 수 있다")
+    @MainActor
+    func componentHeaderBackground() {
+        let section = Section(id: "component-header", cells: [])
+            .withHeader(MockComponent(item: .init(title: "Header")))
+            .headerBackground(.systemBackground)
+
+        #expect(section.header?.backgroundColor?.isEqual(UIColor.systemBackground) == true)
+    }
+
     @Test("SwiftUI header는 기존 supplementary model로 생성된다")
     @MainActor
     func swiftUIHeader() {
@@ -103,6 +124,18 @@ struct SupplementaryViewTests {
 
         #expect(header.kind == UICollectionView.elementKindSectionHeader)
         #expect(header.alignment == .top)
+    }
+
+    @Test("SwiftUI Header에 full-bleed background를 선언할 수 있다")
+    @MainActor
+    func swiftUIHeaderBackground() {
+        let section = Section(id: "swiftui-header", cells: [])
+            .withHeader {
+                Text("추천 팝업")
+            }
+            .headerBackground(.systemBackground)
+
+        #expect(section.header?.backgroundColor?.isEqual(UIColor.systemBackground) == true)
     }
 
     @Test("SwiftUI header의 item이 달라지면 변경으로 판단한다")
@@ -146,6 +179,20 @@ struct SupplementaryViewTests {
         #expect(footer.kind == UICollectionView.elementKindSectionFooter)
         #expect(footer.alignment == .bottom)
         #expect(footer != updated)
+    }
+
+    @Test("Footer도 같은 full-bleed background API를 사용한다")
+    @MainActor
+    func swiftUIFooterBackground() {
+        let section = Section(id: "footer", cells: [])
+            .withFooter {
+                Text("더 보기")
+            }
+            .footerBackground(.secondarySystemBackground)
+
+        #expect(
+            section.footer?.backgroundColor?.isEqual(UIColor.secondarySystemBackground) == true
+        )
     }
 
     @Test("item 없는 SwiftUI supplementary view는 전달한 kind와 alignment를 사용한다")
