@@ -1,6 +1,6 @@
-# Draft Release는 workflow input으로 지정한 버전과 대상 브랜치에 생성합니다.
+# Release with Notes는 workflow input으로 지정한 버전과 대상 브랜치에 Draft 또는 Latest 릴리즈를 생성합니다.
 # `name-template`, `tag-template`은 `main` push 자동 실행을 다시 켰을 때의 기본값입니다.
-# Draft를 검토한 뒤 GitHub Releases 화면에서 Publish합니다.
+# 변경사항 분류에는 병합된 PR의 라벨을 사용합니다.
 
 name-template: '$RESOLVED_VERSION'
 tag-template: '$RESOLVED_VERSION'

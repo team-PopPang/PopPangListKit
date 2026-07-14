@@ -1,4 +1,4 @@
-name: Draft Release
+name: Release with Notes
 
 on:
   # push:
@@ -7,28 +7,36 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Draft release version, e.g. 1.0.0"
+        description: "Release version, e.g. 1.0.0"
         required: true
         type: string
       target_branch:
-        description: "Branch to draft the release from"
+        description: "Branch to release from"
         required: true
         default: "main"
         type: string
+      release_mode:
+        description: "Release mode: latest publishes immediately, draft stays unpublished"
+        required: true
+        default: "latest"
+        type: choice
+        options:
+          - latest
+          - draft
 
-run-name: "Draft ${{ inputs.version }} from ${{ inputs.target_branch }}"
+run-name: "${{ inputs.release_mode }} ${{ inputs.version }} from ${{ inputs.target_branch }}"
 
 permissions:
   contents: write
   pull-requests: read
 
 concurrency:
-  group: draft-release-${{ inputs.version }}
+  group: release-with-notes-${{ inputs.version }}
   cancel-in-progress: false
 
 jobs:
-  update-release-draft:
-    name: Update release draft
+  create-release:
+    name: Create ${{ inputs.release_mode }} release with generated notes
     runs-on: ubuntu-latest
 
     steps:
@@ -42,7 +50,7 @@ jobs:
             exit 1
           fi
 
-      - name: Update draft release notes
+      - name: Create ${{ inputs.release_mode }} release with generated notes
         uses: release-drafter/release-drafter@v7
         with:
           config-name: release-drafter.yml
@@ -50,4 +58,5 @@ jobs:
           name: ${{ inputs.version }}
           tag: ${{ inputs.version }}
           commitish: ${{ inputs.target_branch }}
-          publish: false
+          publish: ${{ inputs.release_mode == 'latest' }}
+          latest: ${{ inputs.release_mode == 'latest' }}
