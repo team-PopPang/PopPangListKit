@@ -40,6 +40,7 @@ struct HomeListExample: View {
                     subtitle: "For layoutMode modifier로 카드 크기를 선언합니다"
                 )
             }
+            .headerBackground(.systemBackground)
             .withSectionLayout(
                 HorizontalLayout(
                     spacing: 15,
@@ -66,6 +67,7 @@ struct HomeListExample: View {
                     subtitle: "한 카드씩 멈추는 group paging"
                 )
             }
+            .headerBackground(.systemBackground)
             .withSectionLayout(
                 HorizontalLayout(
                     spacing: 15,
@@ -91,6 +93,16 @@ struct HomeListExample: View {
                     subtitle: "기존 VerticalGridLayout을 그대로 사용합니다"
                 )
             }
+            .headerBackground(.systemBackground)
+            .withFooter {
+                Text("더 많은 팝업을 준비하고 있어요")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 14)
+            }
+            .footerBackground(.systemBackground)
             .withSectionLayout(
                 VerticalGridLayout(
                     numberOfItemsInRow: 2,
@@ -128,7 +140,6 @@ private struct HomeSectionHeader: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
-        .background(Color(uiColor: .systemBackground))
     }
 }
 

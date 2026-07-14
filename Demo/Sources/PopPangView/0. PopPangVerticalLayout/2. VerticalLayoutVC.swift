@@ -111,6 +111,7 @@ extension VerticalLayoutVC {
                     item: .init(title: "헤더 타이틀", subtitle: "헤더 서브 타이틀")
                 )
             )
+            .headerBackground(.systemBackground)
             .withSectionLayout(
                 DefaultCompositionalLayoutSectionFactory.vertical(spacing: 0)
                     .withSectionContentInsets(.init(top: 16, leading: 20, bottom: 8, trailing: 20))
