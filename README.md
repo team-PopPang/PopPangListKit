@@ -8,22 +8,30 @@ PopPangListKit은 복잡한 목록에서 UIKit의 통제력과 SwiftUI의 생산
 
 ## 왜 만들었나요?
 
-SwiftUI `List`는 표준 목록을 빠르게 구현할 때 적합합니다. 데이터 규모가 크지 않고 디자인 자유도가 중요하다면 `ScrollView + LazyVStack`도 좋은 선택입니다.
+기본적인 목록은 SwiftUI `List`로 빠르게 구현할 수 있습니다. 카드형 피드처럼 디자인 자유도가 중요한 화면이라면 `ScrollView + LazyVStack`도 좋은 선택입니다.
 
-목록이 커지고 interaction이 복잡해지면 다른 문제가 생깁니다. Section별 세로·가로·그리드 배치, 동적 높이, 원격 이미지 prefetch, pagination, scroll lifecycle과 실시간 데이터 반영을 함께 다루려면 데이터와 셀이 갱신되는 과정을 예측할 수 있어야 합니다.
+다만 목록이 복잡해지면 디자인만 구현해서는 충분하지 않습니다. 다음을 함께 다룰 때는 데이터와 셀이 언제, 어떻게 갱신되는지 예측할 수 있어야 합니다.
 
-UIKit에서는 데이터 상태를 명시적으로 적용하고 diff 결과를 batch update로 반영할 수 있습니다. cell reuse와 delegate lifecycle도 드러나므로 병목을 측정하고 업데이트 전략을 조정할 수 있습니다. 반면 화면마다 data source와 delegate를 다시 구현하면 코드가 늘고 동작이 분산됩니다.
+- Section별 세로·가로·그리드 배치
+- 동적 높이와 원격 이미지 prefetch
+- pagination, scroll lifecycle, 실시간 데이터 반영
 
-PopPangListKit은 목록의 뼈대를 `UICollectionView`로 유지하면서 SwiftUI와 유사한 선언형 작성 경험을 제공합니다.
+UIKit의 `UICollectionView`는 데이터 상태를 명시적으로 적용하고, diff 결과를 batch update로 반영합니다. cell reuse와 delegate lifecycle도 드러나므로 병목을 측정하고 업데이트 전략을 조정할 수 있습니다.
 
-| 선택 | 적합한 화면 | 감수할 점 |
+하지만 화면마다 data source, delegate, diff, 이벤트 연결을 다시 작성하면 코드와 동작이 분산됩니다.
+
+**PopPangListKit은 `UICollectionView`의 렌더링 경로는 유지하고, 선언형 DSL로 이 반복을 줄입니다.** UIKit `Component`와 SwiftUI `View`는 같은 `Section`, 데이터 snapshot, 업데이트 경로를 공유합니다.
+
+### 어떤 목록에 맞나요?
+
+| 선택 | 적합한 화면 | 고려할 점 |
 |---|---|---|
-| SwiftUI `List` | swipe, edit, selection 같은 플랫폼 기본 목록 기능이 중요한 화면 | 여백, 배경, 구분선 같은 기본 규칙을 커스텀 디자인에서 우회해야 할 수 있음 |
+| SwiftUI `List` | swipe, edit, selection 같은 기본 목록 기능이 중요한 화면 | 기본 여백·배경·구분선을 커스텀 디자인에 맞춰 조정해야 할 수 있음 |
 | `ScrollView + LazyVStack` | 카드형 피드처럼 디자인 자유도가 중요한 화면 | swipe, edit, selection, separator를 직접 구현해야 함 |
-| `UICollectionView` | 데이터 갱신, cell reuse, prefetch와 scroll lifecycle을 예측하고 튜닝해야 하는 화면 | data source, delegate, diff와 이벤트 연결 코드가 늘어남 |
-| PopPangListKit | 선언형 문법과 UICollectionView의 통제력이 모두 필요한 화면 | UIKit Core 위에서 UIKit Component와 SwiftUI View를 함께 사용 |
+| `UICollectionView` | 데이터 갱신, cell reuse, prefetch, scroll lifecycle을 예측하고 튜닝해야 하는 화면 | data source, delegate, diff, 이벤트 연결 코드가 늘어남 |
+| PopPangListKit | 선언형 문법과 `UICollectionView`의 통제력이 모두 필요한 화면 | UIKit Core 위에서 UIKit `Component`와 SwiftUI `View`를 함께 사용 |
 
-PopPangListKit은 SwiftUI `List`의 모든 기능을 복제하지 않습니다. SwiftUI의 선언형 작성 경험과 UICollectionView의 명시적인 렌더링 경로를 하나의 DSL로 결합합니다.
+PopPangListKit은 SwiftUI `List`의 모든 기능을 복제하지 않습니다. SwiftUI의 선언형 작성 경험과 `UICollectionView`의 명시적인 렌더링 경로를 하나의 DSL로 결합합니다.
 
 ## 목차
 
