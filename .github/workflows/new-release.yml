@@ -5,14 +5,26 @@ on:
   #   branches:
   #     - main
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Draft release version, e.g. 1.0.0"
+        required: true
+        type: string
+      target_branch:
+        description: "Branch to draft the release from"
+        required: true
+        default: "main"
+        type: string
+
+run-name: "Draft ${{ inputs.version }} from ${{ inputs.target_branch }}"
 
 permissions:
   contents: write
   pull-requests: read
 
 concurrency:
-  group: draft-release-main
-  cancel-in-progress: true
+  group: draft-release-${{ inputs.version }}
+  cancel-in-progress: false
 
 jobs:
   update-release-draft:
@@ -20,7 +32,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Validate version
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid version: $VERSION"
+            echo "Use a SemVer-like value such as 1.0.0."
+            exit 1
+          fi
+
       - name: Update draft release notes
         uses: release-drafter/release-drafter@v7
         with:
           config-name: release-drafter.yml
+          version: ${{ inputs.version }}
+          name: ${{ inputs.version }}
+          tag: ${{ inputs.version }}
+          commitish: ${{ inputs.target_branch }}
+          publish: false
