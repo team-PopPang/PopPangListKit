@@ -16,14 +16,18 @@ public struct PopPangList: View {
     // MARK: - SwiftUI+
 
     /// SwiftUI 화면에서 프로그램 스크롤 명령을 전달할 proxy입니다.
-    private let proxy: PopPangListProxy?
+    private let proxy: ListProxy?
+
+    /// SwiftUI scroll overlay의 상태와 threshold 설정입니다.
+    private var scrollOverlayConfiguration: ScrollOverlayConfiguration?
     
     public var body: some View {
         PopPangListRepresentable(
             list: list,
             configuration: configuration,
             prefetchingPlugins: prefetchingPlugins,
-            proxy: proxy
+            proxy: proxy,
+            scrollOverlayConfiguration: scrollOverlayConfiguration
         )
         // .ignoresSafeArea(.container, edges: [])
     }
@@ -35,13 +39,28 @@ extension PopPangList {
             enablesReconfigureItems: true
         ),
         prefetchingPlugins: [CollectionViewPrefetchingPlugin] = [],
-        proxy: PopPangListProxy? = nil,
+        proxy: ListProxy? = nil,
         @SectionsBuilder content: () -> [Section]
     ) {
         self.configuration = configuration
         self.prefetchingPlugins = prefetchingPlugins
         self.proxy = proxy
         self.list = List(sections: content())
+    }
+}
+
+// MARK: - SwiftUI+ Internal Configuration
+extension PopPangList {
+    func applyingScrollOverlay(
+        state: ScrollOverlayVisibilityState,
+        visibleWhen: ScrollOverlayVisibility
+    ) -> Self {
+        var copy = self
+        copy.scrollOverlayConfiguration = .init(
+            state: state,
+            visibleWhen: visibleWhen
+        )
+        return copy
     }
 }
 

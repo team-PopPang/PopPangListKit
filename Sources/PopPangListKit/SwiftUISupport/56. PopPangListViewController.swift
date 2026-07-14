@@ -12,6 +12,11 @@ final class PopPangListViewController: UIViewController {
     private let layoutAdapter: CollectionViewLayoutAdapter
     let collectionView: UICollectionView
     private let adapter: CollectionViewAdapter
+
+#if DEBUG
+    /// Scroll overlay 상태 변경이 List apply를 다시 예약하지 않는지 검증하기 위한 횟수입니다.
+    private(set) var appliedListCount = 0
+#endif
     
     init(
         configuration: CollectionViewAdapterConfiguration,
@@ -54,10 +59,27 @@ final class PopPangListViewController: UIViewController {
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
     }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        adapter.refreshScrollOverlay()
+    }
     
     func apply(_ list: List) {
         loadViewIfNeeded()
-        adapter.apply(list)
+#if DEBUG
+        appliedListCount += 1
+#endif
+        adapter.apply(list) { [weak self] in
+            self?.adapter.refreshScrollOverlay()
+        }
+    }
+
+    // MARK: - SwiftUI+
+    func configureScrollOverlay(
+        _ configuration: ScrollOverlayConfiguration?
+    ) {
+        adapter.configureScrollOverlay(configuration)
     }
 }
 

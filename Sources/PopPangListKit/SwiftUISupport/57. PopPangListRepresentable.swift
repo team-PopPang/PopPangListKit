@@ -16,7 +16,10 @@ struct PopPangListRepresentable: UIViewControllerRepresentable {
     // MARK: - SwiftUI+
 
     /// SwiftUI 화면이 소유하는 프로그램 스크롤 proxy입니다.
-    let proxy: PopPangListProxy?
+    let proxy: ListProxy?
+
+    /// SwiftUI 화면에 연결할 scroll overlay 설정입니다.
+    let scrollOverlayConfiguration: ScrollOverlayConfiguration?
     
     func makeUIViewController(
         context: Context
@@ -28,7 +31,8 @@ struct PopPangListRepresentable: UIViewControllerRepresentable {
         context.coordinator.schedule(
             list: list,
             viewController: viewController,
-            proxy: proxy
+            proxy: proxy,
+            scrollOverlayConfiguration: scrollOverlayConfiguration
         )
         return viewController
     }
@@ -40,7 +44,8 @@ struct PopPangListRepresentable: UIViewControllerRepresentable {
         context.coordinator.schedule(
             list: list,
             viewController: viewController,
-            proxy: proxy
+            proxy: proxy,
+            scrollOverlayConfiguration: scrollOverlayConfiguration
         )
     }
 
@@ -62,14 +67,16 @@ extension PopPangListRepresentable {
         // MARK: - SwiftUI+
 
         /// 현재 UIViewController와 연결된 proxy입니다.
-        private weak var attachedProxy: PopPangListProxy?
+        private weak var attachedProxy: ListProxy?
 
         func schedule(
             list: List,
             viewController: PopPangListViewController,
-            proxy: PopPangListProxy?
+            proxy: ListProxy?,
+            scrollOverlayConfiguration: ScrollOverlayConfiguration?
         ) {
             updateProxy(proxy, for: viewController)
+            viewController.configureScrollOverlay(scrollOverlayConfiguration)
 
             // 새로운 상태가 들어올 때 다음 코드로 이전 대기 작업을 취소
             pendingUpdate?.cancel()
@@ -87,10 +94,11 @@ extension PopPangListRepresentable {
             pendingUpdate = nil
             attachedProxy?.detach(viewController)
             attachedProxy = nil
+            viewController.configureScrollOverlay(nil)
         }
 
         private func updateProxy(
-            _ proxy: PopPangListProxy?,
+            _ proxy: ListProxy?,
             for viewController: PopPangListViewController
         ) {
             guard attachedProxy !== proxy else {

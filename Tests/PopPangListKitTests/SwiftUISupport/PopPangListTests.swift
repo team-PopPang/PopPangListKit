@@ -1,4 +1,5 @@
 import Combine
+import SwiftUI
 import Testing
 @testable import PopPangListKit
 
@@ -34,6 +35,23 @@ struct PopPangListTests {
         }
 
         #expect(String(describing: type(of: list)) == "PopPangList")
+    }
+
+    @Test("didScroll 뒤에 scrollOverlay를 연결할 수 있다")
+    @MainActor
+    func supportsScrollOverlayAfterScrollEventModifier() {
+        let list = PopPangList {
+            Section(id: "section") {}
+        }
+        .didScroll { _ in }
+        .scrollOverlay(
+            alignment: .bottomTrailing,
+            visibleWhen: .relativeToViewport(1.5)
+        ) { isVisible in
+            Text("\(isVisible)")
+        }
+
+        #expect(String(describing: type(of: list)).isEmpty == false)
     }
 }
 
