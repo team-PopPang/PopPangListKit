@@ -72,9 +72,8 @@ extension Cell {
     }
 }
 
-// 정적 콘텐츠용 convenience initializer입니다
-// 정적 initializer는 동일한 ID에서 외부 값만 바뀌면 diff가 변경을 감지하지 못할 수 있습니다.
-// 동적 셀은 item: initializer를 사용하는 게 안전합니다.
+// item 없이 SwiftUI 상태를 직접 캡처하는 convenience initializer입니다.
+// 새 List snapshot마다 콘텐츠를 갱신합니다. 특정 값이 바뀔 때만 갱신하려면 item: initializer를 사용하세요.
 extension Cell {
     @MainActor
     public init<Content: View>(
@@ -84,12 +83,10 @@ extension Cell {
         ),
         @ViewBuilder content: () -> Content
     ) {
-        let identity = AnyHashable(id)
-
         self.init(
-            id: identity,
+            id: id,
             component: SwiftUIHostingComponent(
-                item: identity,
+                item: SwiftUIRefreshToken(),
                 layoutMode: layoutMode,
                 content: content()
             )

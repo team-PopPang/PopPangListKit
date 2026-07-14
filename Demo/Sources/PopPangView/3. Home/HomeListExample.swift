@@ -37,12 +37,9 @@ struct HomeListExample: View {
                     }
                 }
             }
-            .withHeader(
-                item: "추천 \(featuredCards.count)개",
-                layoutMode: .flexibleHeight(estimatedHeight: 58)
-            ) { title in
+            .withHeader {
                 HomeSectionHeader(
-                    title: title,
+                    title: "추천 \(featuredCards.count)개",
                     subtitle: "기존 Cell layoutMode로 카드 크기를 선언합니다"
                 )
             }
@@ -69,11 +66,11 @@ struct HomeListExample: View {
                     }
                 }
             }
-            .withHeader(
-                item: "오픈 예정 \(comingCards.count)개",
-                layoutMode: .flexibleHeight(estimatedHeight: 58)
-            ) { title in
-                HomeSectionHeader(title: title, subtitle: "한 카드씩 멈추는 group paging")
+            .withHeader {
+                HomeSectionHeader(
+                    title: "오픈 예정 \(comingCards.count)개",
+                    subtitle: "한 카드씩 멈추는 group paging"
+                )
             }
             .withSectionLayout(
                 HorizontalLayout(
@@ -99,12 +96,9 @@ struct HomeListExample: View {
                     }
                 }
             }
-            .withHeader(
-                item: "전체 팝업",
-                layoutMode: .flexibleHeight(estimatedHeight: 58)
-            ) { title in
+            .withHeader {
                 HomeSectionHeader(
-                    title: title,
+                    title: "전체 팝업",
                     subtitle: "기존 VerticalGridLayout을 그대로 사용합니다"
                 )
             }

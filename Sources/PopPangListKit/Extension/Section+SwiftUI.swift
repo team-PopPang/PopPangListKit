@@ -21,6 +21,26 @@ extension SupplementaryView {
         )
     }
 
+    /// `item` 없이 SwiftUI supplementary view를 연결합니다.
+    ///
+    /// 새 List snapshot이 적용될 때 closure가 캡처한 SwiftUI 상태를 반영합니다.
+    /// 특정 값이 바뀔 때만 갱신하려면 `item:` overload를 사용하세요.
+    public static func swiftUI<Content: View>(
+        kind: String,
+        layoutMode: ContentLayoutMode = .flexibleHeight(estimatedHeight: 44),
+        alignment: NSRectAlignment = .top,
+        @ViewBuilder content: () -> Content
+    ) -> Self {
+        swiftUI(
+            kind: kind,
+            item: SwiftUIRefreshToken(),
+            layoutMode: layoutMode,
+            alignment: alignment
+        ) { _ in
+            content()
+        }
+    }
+
     public static func header<Item: Equatable, Content: View>(
         item: Item,
         layoutMode: ContentLayoutMode = .flexibleHeight(estimatedHeight: 44),
@@ -29,6 +49,19 @@ extension SupplementaryView {
         swiftUI(
             kind: UICollectionView.elementKindSectionHeader,
             item: item,
+            layoutMode: layoutMode,
+            alignment: .top,
+            content: content
+        )
+    }
+
+    /// `item` 없이 SwiftUI Section Header를 선언합니다.
+    public static func header<Content: View>(
+        layoutMode: ContentLayoutMode = .flexibleHeight(estimatedHeight: 44),
+        @ViewBuilder content: () -> Content
+    ) -> Self {
+        swiftUI(
+            kind: UICollectionView.elementKindSectionHeader,
             layoutMode: layoutMode,
             alignment: .top,
             content: content
@@ -48,9 +81,38 @@ extension SupplementaryView {
             content: content
         )
     }
+
+    /// `item` 없이 SwiftUI Section Footer를 선언합니다.
+    public static func footer<Content: View>(
+        layoutMode: ContentLayoutMode = .flexibleHeight(estimatedHeight: 44),
+        @ViewBuilder content: () -> Content
+    ) -> Self {
+        swiftUI(
+            kind: UICollectionView.elementKindSectionFooter,
+            layoutMode: layoutMode,
+            alignment: .bottom,
+            content: content
+        )
+    }
 }
 
 extension Section {
+    /// `item` 없이 SwiftUI Section Header를 선언합니다.
+    ///
+    /// Header가 외부 SwiftUI 상태를 직접 캡처할 때 사용합니다.
+    @MainActor
+    public func withHeader<Content: View>(
+        layoutMode: ContentLayoutMode = .flexibleHeight(estimatedHeight: 44),
+        @ViewBuilder content: () -> Content
+    ) -> Self {
+        var copy = self
+        copy.header = .header(
+            layoutMode: layoutMode,
+            content: content
+        )
+        return copy
+    }
+
     @MainActor
     public func withHeader<Item: Equatable, Content: View>(
         item: Item,
@@ -60,6 +122,22 @@ extension Section {
         var copy = self
         copy.header = .header(
             item: item,
+            layoutMode: layoutMode,
+            content: content
+        )
+        return copy
+    }
+
+    /// `item` 없이 SwiftUI Section Footer를 선언합니다.
+    ///
+    /// Footer가 외부 SwiftUI 상태를 직접 캡처할 때 사용합니다.
+    @MainActor
+    public func withFooter<Content: View>(
+        layoutMode: ContentLayoutMode = .flexibleHeight(estimatedHeight: 44),
+        @ViewBuilder content: () -> Content
+    ) -> Self {
+        var copy = self
+        copy.footer = .footer(
             layoutMode: layoutMode,
             content: content
         )

@@ -117,6 +117,57 @@ struct SupplementaryViewTests {
 
         #expect(first != updated)
     }
+
+    @Test("item 없는 SwiftUI header는 새 snapshot에서 갱신된다")
+    @MainActor
+    func swiftUIHeaderRefreshesCapturedState() {
+        let first = SupplementaryView.header {
+            Text("첫 번째")
+        }
+        let updated = SupplementaryView.header {
+            Text("두 번째")
+        }
+
+        #expect(first.kind == UICollectionView.elementKindSectionHeader)
+        #expect(first.alignment == .top)
+        #expect(first != updated)
+    }
+
+    @Test("item 없는 SwiftUI footer는 footer supplementary model로 생성된다")
+    @MainActor
+    func swiftUIFooter() {
+        let footer = SupplementaryView.footer {
+            Text("더 보기")
+        }
+        let updated = SupplementaryView.footer {
+            Text("모두 보기")
+        }
+
+        #expect(footer.kind == UICollectionView.elementKindSectionFooter)
+        #expect(footer.alignment == .bottom)
+        #expect(footer != updated)
+    }
+
+    @Test("item 없는 SwiftUI supplementary view는 전달한 kind와 alignment를 사용한다")
+    @MainActor
+    func swiftUISupplementaryView() {
+        let view = SupplementaryView.swiftUI(
+            kind: "badge",
+            alignment: .bottom
+        ) {
+            Text("NEW")
+        }
+        let updated = SupplementaryView.swiftUI(
+            kind: "badge",
+            alignment: .bottom
+        ) {
+            Text("HOT")
+        }
+
+        #expect(view.kind == "badge")
+        #expect(view.alignment == .bottom)
+        #expect(view != updated)
+    }
 }
 
 private struct MockComponent: Component {

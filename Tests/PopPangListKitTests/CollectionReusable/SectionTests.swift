@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 import Testing
 import DifferenceKit
 @testable import PopPangListKit
@@ -66,7 +67,7 @@ struct SectionTests {
         let lhs = Section(id: "section-1", cells: [])
         let rhs = Section(id: "section-1", cells: [])
 
-        let set: Set<Section> = [lhs, rhs]
+        let set: Set<PopPangListKit.Section> = [lhs, rhs]
 
         #expect(set.count == 1)
     }
@@ -76,7 +77,7 @@ struct SectionTests {
         let lhs = Section(id: "section-1", cells: [])
         let rhs = Section(id: "section-2", cells: [])
 
-        let set: Set<Section> = [lhs, rhs]
+        let set: Set<PopPangListKit.Section> = [lhs, rhs]
 
         #expect(set.count == 2)
     }
@@ -143,6 +144,21 @@ struct SectionTests {
         let rhs = Section(id: "section-2", cells: [])
 
         #expect(!lhs.isContentEqual(to: rhs))
+    }
+
+    @Test("item 없는 SwiftUI Header와 Footer를 Section modifier로 선언할 수 있다")
+    @MainActor
+    func supportsSwiftUIHeaderAndFooterWithoutItem() {
+        let section = Section(id: "section", cells: [])
+            .withHeader {
+                Text("헤더")
+            }
+            .withFooter {
+                Text("푸터")
+            }
+
+        #expect(section.header?.kind == UICollectionView.elementKindSectionHeader)
+        #expect(section.footer?.kind == UICollectionView.elementKindSectionFooter)
     }
 }
 

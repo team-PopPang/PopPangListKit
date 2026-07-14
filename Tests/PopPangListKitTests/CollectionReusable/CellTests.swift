@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 import Testing
 import DifferenceKit
 @testable import PopPangListKit
@@ -165,6 +166,20 @@ struct CellTests {
         )
 
         #expect(!lhs.isContentEqual(to: rhs))
+    }
+
+    @Test("item 없는 SwiftUI Cell은 새 snapshot에서 콘텐츠를 갱신한다")
+    @MainActor
+    func staticSwiftUICellRefreshesCapturedState() {
+        let first = Cell(id: "greeting") {
+            Text("안녕하세요")
+        }
+        let updated = Cell(id: "greeting") {
+            Text("반가워요")
+        }
+
+        #expect(first.id == updated.id)
+        #expect(first != updated)
     }
 }
 
