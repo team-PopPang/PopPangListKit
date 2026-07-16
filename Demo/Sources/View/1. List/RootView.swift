@@ -31,6 +31,10 @@ struct RootView: View {
                     NavigationLink("example 4 - Home list") {
                         HomeListExample()
                     }
+
+                    NavigationLink("example 5 - Async layout reproduction") {
+                        AsyncPopupLayoutExample()
+                    }
                 }
             }
             .navigationTitle("Demo")
