@@ -160,6 +160,38 @@ struct SectionTests {
         #expect(section.header?.kind == UICollectionView.elementKindSectionHeader)
         #expect(section.footer?.kind == UICollectionView.elementKindSectionFooter)
     }
+
+    @Test("같은 Section의 중복 Cell ID를 탐지한다")
+    func detectsDuplicateCellIDsWithinSection() {
+        let cells = [
+            makeCell(id: "duplicate", title: "A"),
+            makeCell(id: "unique", title: "B"),
+            makeCell(id: "duplicate", title: "C"),
+        ]
+
+        #expect(
+            Section.duplicateCellIDs(in: cells) == [
+                AnyHashable("duplicate"),
+            ]
+        )
+    }
+
+    @Test("cells를 교체해도 Section 범위 identity를 적용한다")
+    func scopesCellsAssignedAfterInitialization() {
+        var section = Section(id: "section", cells: [])
+        section.cells = [makeCell(id: "cell", title: "A")]
+
+        #expect(
+            section.cells[0].differenceIdentifier
+                == AnyHashable(
+                    SectionScopedCellIdentity(
+                        sectionID: "section",
+                        cellID: "cell"
+                    )
+                )
+        )
+        #expect(section.cells[0].id == AnyHashable("cell"))
+    }
 }
 
 private func makeCell(

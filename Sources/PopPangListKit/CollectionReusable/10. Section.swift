@@ -26,7 +26,17 @@ public struct Section: Identifiable, @MainActor ListingViewEventHandler {
     public var header: SupplementaryView?
     
     /// UICollectionViewCell을 표현하는 Cell 배열
-    public var cells: [Cell]
+    public var cells: [Cell] {
+        get {
+            scopedCells
+        }
+        set {
+            scopedCells = Self.prepareCells(newValue, sectionID: id)
+        }
+    }
+
+    /// Section 범위의 내부 identity가 적용된 Cell 배열
+    private var scopedCells: [Cell]
     
     /// 푸터를 사용하는 SuplementaryView
     public var footer: SupplementaryView?
@@ -46,8 +56,9 @@ public struct Section: Identifiable, @MainActor ListingViewEventHandler {
         id: some Hashable,
         cells: [Cell]
     ) {
-        self.id = id
-        self.cells = cells
+        let sectionID = AnyHashable(id)
+        self.id = sectionID
+        self.scopedCells = Self.prepareCells(cells, sectionID: sectionID)
         self.eventStorage = ListingViewEventStorage()
     }
     
@@ -60,9 +71,51 @@ public struct Section: Identifiable, @MainActor ListingViewEventHandler {
         id: some Hashable,
         @CellsBuilder _ cells: () -> [Cell]
     ) {
-        self.id = id
-        self.cells = cells()
+        let sectionID = AnyHashable(id)
+        self.id = sectionID
+        self.scopedCells = Self.prepareCells(cells(), sectionID: sectionID)
         self.eventStorage = ListingViewEventStorage()
+    }
+}
+
+extension Section {
+
+    /// 같은 Section 내부에서 중복된 raw Cell ID를 선언하지 못하도록 검사하고,
+    /// 모든 Cell에 Section 범위의 내부 identity를 적용합니다.
+    private static func prepareCells(
+        _ cells: [Cell],
+        sectionID: AnyHashable
+    ) -> [Cell] {
+        #if DEBUG
+        let duplicateIDs = duplicateCellIDs(in: cells)
+
+        assert(
+            duplicateIDs.isEmpty,
+            """
+            Duplicate Cell ID(s) \(duplicateIDs) in Section '\(sectionID)'. \
+            Cell IDs must be unique within a Section; \
+            the same Cell ID may be reused in different Sections.
+            """
+        )
+        #endif
+
+        return cells.map {
+            $0.scoped(to: sectionID)
+        }
+    }
+
+    /// Debug assertion과 테스트가 같은 중복 판정 규칙을 공유하도록 분리합니다.
+    static func duplicateCellIDs(in cells: [Cell]) -> [AnyHashable] {
+        var seenIDs = Set<AnyHashable>()
+        var duplicateIDs = Set<AnyHashable>()
+
+        for cell in cells where seenIDs.insert(cell.id).inserted == false {
+            duplicateIDs.insert(cell.id)
+        }
+
+        return duplicateIDs.sorted {
+            String(reflecting: $0) < String(reflecting: $1)
+        }
     }
 }
 

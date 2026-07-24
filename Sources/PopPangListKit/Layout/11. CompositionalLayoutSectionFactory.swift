@@ -185,7 +185,7 @@ extension CompositionalLayoutSectionFactory {
         sizeStorage: ComponentSizeStorage
     ) -> [NSCollectionLayoutItem] {
         cells.map {
-            if let sizeContext = sizeStorage.cellSize(for: $0.id),
+            if let sizeContext = sizeStorage.cellSize(for: $0.internalIdentity),
                sizeContext.item == $0.component.item {
                 return NSCollectionLayoutItem(
                     layoutSize: makeLayoutSize(
