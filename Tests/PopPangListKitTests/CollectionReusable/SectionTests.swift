@@ -161,6 +161,22 @@ struct SectionTests {
         #expect(section.footer?.kind == UICollectionView.elementKindSectionFooter)
     }
 
+    @Test("같은 item 기반 Header는 Section update를 만들지 않는다")
+    @MainActor
+    func itemBasedHeaderAvoidsUnchangedSectionUpdate() {
+        let source = [
+            makeSectionWithItemBasedHeader(title: "Header"),
+        ]
+        let target = [
+            makeSectionWithItemBasedHeader(title: "Header"),
+        ]
+
+        let changeset = StagedChangeset(source: source, target: target)
+
+        #expect(changeset.flatMap(\.sectionUpdated).isEmpty)
+        #expect(changeset.flatMap(\.elementUpdated).isEmpty)
+    }
+
     @Test("같은 Section의 중복 Cell ID를 탐지한다")
     func detectsDuplicateCellIDsWithinSection() {
         let cells = [
@@ -191,6 +207,19 @@ struct SectionTests {
                 )
         )
         #expect(section.cells[0].id == AnyHashable("cell"))
+    }
+}
+
+@MainActor
+private func makeSectionWithItemBasedHeader(
+    title: String
+) -> PopPangListKit.Section {
+    Section(
+        id: "section",
+        cells: [makeCell(id: "cell", title: "Cell")]
+    )
+    .withHeader(item: title) {
+        Text($0)
     }
 }
 
