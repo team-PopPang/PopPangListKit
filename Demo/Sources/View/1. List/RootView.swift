@@ -36,7 +36,7 @@ struct RootView: View {
                         AsyncPopupLayoutExample()
                     }
 
-                    NavigationLink("example 6 - Section-scoped Cell ID") {
+                    NavigationLink("example 6 - Section ID & Animation") {
                         SectionScopedIdentityExample()
                     }
                 }

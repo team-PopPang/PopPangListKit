@@ -43,6 +43,12 @@ public struct Section: Identifiable, @MainActor ListingViewEventHandler {
     
     /// Section 레이아웃 설정(타입 소거된 레이아웃 클로저)
     private var sectionLayout: CompositionalLayoutSectionFactory.SectionLayout?
+
+    /// 기존 Section 내부 변경을 애니메이션 없이 적용할지 여부
+    ///
+    /// diff identity나 content equality에는 포함하지 않고,
+    /// CollectionViewAdapter의 update transaction을 나누는 정책으로만 사용합니다.
+    var isUpdateAnimationDisabled = false
     
     /// 이벤트 저장소 (header/footer lifecycle 이벤트 등)
     let eventStorage: ListingViewEventStorage
@@ -79,6 +85,23 @@ public struct Section: Identifiable, @MainActor ListingViewEventHandler {
 }
 
 extension Section {
+
+    /// 이 Section 내부의 업데이트 애니메이션을 비활성화합니다.
+    ///
+    /// 리스트 전체 update strategy가 `.animatedBatchUpdates`일 때,
+    /// 기존 snapshot에도 존재하는 같은 ID의 Section 내부 변경을
+    /// non-animated batch update로 먼저 적용합니다.
+    ///
+    /// Section 자체의 삽입, 삭제, 이동은 리스트 전체 update strategy를 따릅니다.
+    ///
+    /// - Parameter disabled: `true`면 업데이트 애니메이션을 비활성화합니다.
+    /// - Returns: Section 단위 애니메이션 정책이 적용된 새로운 `Section`
+    @MainActor
+    public func disablesUpdateAnimation(_ disabled: Bool = true) -> Self {
+        var copy = self
+        copy.isUpdateAnimationDisabled = disabled
+        return copy
+    }
 
     /// 같은 Section 내부에서 중복된 raw Cell ID를 선언하지 못하도록 검사하고,
     /// 모든 Cell에 Section 범위의 내부 identity를 적용합니다.
