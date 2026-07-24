@@ -212,7 +212,21 @@ Section(id: "popups") {
 }
 ```
 
-`item:` overload는 특정 `Equatable` 값이 바뀔 때만 Header나 Footer를 갱신하고 싶을 때 사용합니다. `layoutMode`는 기본 `.flexibleHeight(estimatedHeight: 44)`로 충분하면 생략할 수 있습니다.
+item 없는 Header와 Footer는 새 snapshot마다 refresh token을 생성합니다. Header 또는 Footer가 변경되면 DifferenceKit은 해당 Section을 `reloadSections`로 갱신하므로, Cell 선택처럼 supplementary와 관계없는 부모 상태 변경에서도 Section의 visible Cell이 다시 렌더링될 수 있습니다.
+
+특정 `Equatable` 값이 바뀔 때만 Header나 Footer를 갱신하려면 `item:` overload를 사용합니다.
+
+```swift
+Section(id: "popups") {
+    // Cells
+}
+.withHeader(item: popups.count) { popupCount in
+    Text("\(popupCount)개의 팝업")
+        .font(.headline)
+}
+```
+
+Header가 외부 상태를 직접 캡처해야 할 때만 item 없는 overload를 사용하고, 그 외에는 `item:`에 실제 표시 데이터를 전달하는 방식을 권장합니다. `layoutMode`는 기본 `.flexibleHeight(estimatedHeight: 44)`로 충분하면 생략할 수 있습니다.
 
 ### UIKit Component
 

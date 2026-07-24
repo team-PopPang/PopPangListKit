@@ -73,10 +73,10 @@ struct SectionScopedIdentityExample: View {
                 selectedPopupID = $0.popupUuid
             }
         }
-        .withHeader {
+        .withHeader(item: bestHeaderItem) { item in
             SectionIdentityHeader(
-                title: "Best Section",
-                subtitle: #"Section(id: "best") · BestSectionPopupCell"#
+                title: item.title,
+                subtitle: item.subtitle
             )
         }
         .headerBackground(.systemBackground)
@@ -116,10 +116,10 @@ struct SectionScopedIdentityExample: View {
                 }
             }
         }
-        .withHeader {
+        .withHeader(item: gridHeaderItem) { item in
             SectionIdentityHeader(
-                title: "Grid Section",
-                subtitle: gridHeaderSubtitle
+                title: item.title,
+                subtitle: item.subtitle
             )
         }
         .headerBackground(.systemBackground)
@@ -140,12 +140,20 @@ struct SectionScopedIdentityExample: View {
         )
     }
 
-    private var gridHeaderSubtitle: String {
-        if usesAlternateGridCell {
-            return #"Section(id: "grid") · AlternateGridSectionPopupCell"#
-        }
+    private var bestHeaderItem: SectionIdentityHeaderItem {
+        SectionIdentityHeaderItem(
+            title: "Best Section",
+            subtitle: #"Section(id: "best") · BestSectionPopupCell"#
+        )
+    }
 
-        return #"Section(id: "grid") · GridSectionPopupCell"#
+    private var gridHeaderItem: SectionIdentityHeaderItem {
+        SectionIdentityHeaderItem(
+            title: "Grid Section",
+            subtitle: usesAlternateGridCell
+                ? #"Section(id: "grid") · AlternateGridSectionPopupCell"#
+                : #"Section(id: "grid") · GridSectionPopupCell"#
+        )
     }
 }
 
@@ -154,6 +162,11 @@ private struct SectionIdentityPopup: Equatable {
     let title: String
     let location: String
     let revision: Int
+}
+
+private struct SectionIdentityHeaderItem: Equatable {
+    let title: String
+    let subtitle: String
 }
 
 private struct SectionIdentityControls: View {
