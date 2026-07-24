@@ -2,17 +2,17 @@ import PopPangListKit
 import SwiftUI
 import UIKit
 
-/// 같은 raw Cell ID를 여러 Section에서 안전하게 사용하는 예제입니다.
+/// 같은 raw Cell ID와 Section별 update animation 정책을 확인하는 예제입니다.
 ///
 /// `best`와 `grid`는 동일한 Popup 배열과 `popupUuid`를 공유하지만,
-/// 서로 다른 SwiftUI Cell View 타입과 크기 규칙을 사용합니다.
+/// 서로 다른 SwiftUI Cell View 타입, 크기 규칙, update animation을 사용합니다.
 struct SectionScopedIdentityExample: View {
     @State private var revision = 1
     @State private var usesAlternateGridCell = false
     @State private var selectedPopupID: String?
 
     private var popups: [SectionIdentityPopup] {
-        [
+        var popups = [
             SectionIdentityPopup(
                 popupUuid: "popup-seongsu",
                 title: "성수 크리에이터 마켓",
@@ -32,6 +32,20 @@ struct SectionScopedIdentityExample: View {
                 revision: revision
             ),
         ]
+
+        if revision.isMultiple(of: 2) {
+            popups.insert(
+                SectionIdentityPopup(
+                    popupUuid: "popup-ikseon",
+                    title: "익선 큐레이션 팝업",
+                    location: "서울 종로구",
+                    revision: revision
+                ),
+                at: 1
+            )
+        }
+
+        return popups
     }
 
     var body: some View {
@@ -80,6 +94,7 @@ struct SectionScopedIdentityExample: View {
             )
         }
         .headerBackground(.systemBackground)
+        .disablesUpdateAnimation()
         .withSectionLayout(
             HorizontalLayout(
                 spacing: 12,
@@ -143,7 +158,7 @@ struct SectionScopedIdentityExample: View {
     private var bestHeaderItem: SectionIdentityHeaderItem {
         SectionIdentityHeaderItem(
             title: "Best Section",
-            subtitle: #"Section(id: "best") · BestSectionPopupCell"#
+            subtitle: "update animation disabled"
         )
     }
 
@@ -192,12 +207,19 @@ private struct SectionIdentityControls: View {
                 )
                 .font(.caption)
                 .foregroundStyle(.secondary)
+
+                Label(
+                    "Best는 즉시 갱신 · Grid는 animated diff",
+                    systemImage: "wand.and.stars"
+                )
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.orange)
             }
 
             HStack(spacing: 10) {
                 Button(action: onReapply) {
                     Label(
-                        "Snapshot \(revision)",
+                        "항목 삽입/삭제 · \(revision)",
                         systemImage: "arrow.clockwise"
                     )
                 }

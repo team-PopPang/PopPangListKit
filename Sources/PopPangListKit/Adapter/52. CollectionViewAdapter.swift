@@ -188,7 +188,11 @@ final public class CollectionViewAdapter: NSObject {
         /// 업데이트 전략에 따라 처리
         switch updateStrategy {
         case .animatedBatchUpdates:
-            performDifferentialUpdates(old: self.list, new: list, completion: overridedCompletion)
+            performAnimatedDifferentialUpdates(
+                old: self.list,
+                new: list,
+                completion: overridedCompletion
+            )
             
         case .nonanimatedBatchUpdates:
             UIView.performWithoutAnimation {
@@ -292,18 +296,27 @@ final public class CollectionViewAdapter: NSObject {
     private func performDifferentialUpdates(
         old: List?,
         new: List?,
+        allowsReloadDataInterrupt: Bool = true,
         completion: @escaping (Bool) -> Void
     ) {
         let changeset = StagedChangeset(
             source: old?.sections ?? [],
             target: new?.sections ?? []
         )
+        let interrupt: ((Changeset<[Section]>) -> Bool)?
+
+        if allowsReloadDataInterrupt {
+            interrupt = { [configuration] changeset in
+                changeset.changeCount
+                    > configuration.batchUpdateInterruptCount
+            }
+        } else {
+            interrupt = nil
+        }
 
         collectionView?.reload(
             using: changeset,
-            interrupt: { [configuration] changeset in
-                changeset.changeCount > configuration.batchUpdateInterruptCount
-            },
+            interrupt: interrupt,
             setData: { [weak self] sections in
                 self?.list?.sections = sections
             },
@@ -317,6 +330,97 @@ final public class CollectionViewAdapter: NSObject {
             completion: completion
         )
     }
+
+    /// Section 단위 animation 정책을 반영한 animated diff를 수행합니다.
+    ///
+    /// animation이 비활성화된 기존 Section은 중간 snapshot에서 먼저 갱신하고,
+    /// 나머지 변경은 다음 run loop의 animated batch update로 적용합니다.
+    /// 두 번째 단계를 main queue에 예약해 첫 단계가 동기 완료되더라도
+    /// `UIView.performWithoutAnimation` 범위가 animated 단계로 전파되지 않게 합니다.
+    @MainActor
+    private func performAnimatedDifferentialUpdates(
+        old: List?,
+        new: List,
+        completion: @escaping (Bool) -> Void
+    ) {
+        guard let sourceSections = old?.sections,
+              let plan = makeSectionUpdateAnimationPlan(
+                source: sourceSections,
+                target: new.sections
+              )
+        else {
+            performDifferentialUpdates(
+                old: old,
+                new: new,
+                completion: completion
+            )
+            return
+        }
+
+        var nonanimatedList = new
+        nonanimatedList.sections = plan.nonanimatedSections
+
+        UIView.performWithoutAnimation {
+            performDifferentialUpdates(
+                old: old,
+                new: nonanimatedList,
+                allowsReloadDataInterrupt: false
+            ) { [weak self] _ in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self else {
+                        return
+                    }
+
+                    performDifferentialUpdates(
+                        old: nonanimatedList,
+                        new: new,
+                        completion: completion
+                    )
+                }
+            }
+        }
+    }
+}
+
+/// Section 단위 animation 정책을 두 update transaction으로 분리한 결과입니다.
+struct SectionUpdateAnimationPlan {
+    let nonanimatedSections: [Section]
+    let animatedSections: [Section]
+}
+
+/// 기존 snapshot에도 존재하는 animation-disabled Section만 target 상태로 교체합니다.
+///
+/// Section 순서는 source snapshot을 유지하므로 Section 자체의 삽입, 삭제, 이동은
+/// animated target 단계에 남습니다.
+func makeSectionUpdateAnimationPlan(
+    source: [Section],
+    target: [Section]
+) -> SectionUpdateAnimationPlan? {
+    var disabledTargetSectionsByID = [AnyHashable: Section]()
+
+    for section in target where section.isUpdateAnimationDisabled {
+        disabledTargetSectionsByID[section.id] = section
+    }
+
+    var containsExistingDisabledSection = false
+    let nonanimatedSections = source.map { sourceSection in
+        guard let targetSection = disabledTargetSectionsByID[sourceSection.id]
+        else {
+            return sourceSection
+        }
+
+        containsExistingDisabledSection = true
+        return targetSection
+    }
+
+    guard containsExistingDisabledSection else {
+        return nil
+    }
+
+    return SectionUpdateAnimationPlan(
+        nonanimatedSections: nonanimatedSections,
+        animatedSections: target
+    )
 }
 
 // MARK: - Next Batch Trigger
