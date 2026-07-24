@@ -57,6 +57,11 @@ final class ComponentSizeStorageImpl: ComponentSizeStorage {
     func setCellSize(_ size: SizeContext, for hash: AnyHashable) {
         cellSizeStore[hash] = size
     }
+
+    @MainActor
+    func removeCellSize(for hash: AnyHashable) {
+        cellSizeStore.removeValue(forKey: hash)
+    }
     
     @MainActor
     func setHeaderSize(_ size: SizeContext, for hash: AnyHashable) {

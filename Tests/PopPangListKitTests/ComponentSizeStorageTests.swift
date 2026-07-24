@@ -105,6 +105,50 @@ struct ComponentSizeStorageTests {
         #expect(result?.size == CGSize(width: 200, height: 80))
         #expect(result?.item == item)
     }
+
+    @Test("같은 raw Cell ID의 size를 Section별로 독립 저장한다")
+    @MainActor
+    func sameRawCellIDIsScopedBySection() {
+        let storage = ComponentSizeStorageImpl()
+        let bestCell = Section(
+            id: "best",
+            cells: [
+                Cell(
+                    id: "same-popup-id",
+                    component: MockComponent(item: .init(title: "popup"))
+                ),
+            ]
+        ).cells[0]
+        let gridCell = Section(
+            id: "grid",
+            cells: [
+                Cell(
+                    id: "same-popup-id",
+                    component: MockComponent(item: .init(title: "popup"))
+                ),
+            ]
+        ).cells[0]
+
+        storage.setCellSize(
+            (CGSize(width: 300, height: 100), bestCell.component.item),
+            for: bestCell.internalIdentity
+        )
+        storage.setCellSize(
+            (CGSize(width: 150, height: 220), gridCell.component.item),
+            for: gridCell.internalIdentity
+        )
+
+        #expect(bestCell.id == gridCell.id)
+        #expect(bestCell.internalIdentity != gridCell.internalIdentity)
+        #expect(
+            storage.cellSize(for: bestCell.internalIdentity)?.size
+                == CGSize(width: 300, height: 100)
+        )
+        #expect(
+            storage.cellSize(for: gridCell.internalIdentity)?.size
+                == CGSize(width: 150, height: 220)
+        )
+    }
 }
 
 private struct MockComponent: Component {

@@ -437,6 +437,41 @@ PopPangListKit은 계산된 변경을 batch update로 반영합니다. changeset
 
 ## 핵심 개념
 
+### Section과 Cell ID 계약
+
+`Section.id`는 하나의 List 전체에서 고유해야 합니다. `Cell.id`는 자신이 속한 Section 안에서만 고유하면 되며, 서로 다른 Section은 같은 raw Cell ID를 사용할 수 있습니다.
+
+```swift
+PopPangList {
+    Section(id: "best") {
+        For(popups, id: \.popupUuid) { popup in
+            BestPopupCell(popup: popup)
+        }
+    }
+
+    Section(id: "grid") {
+        For(popups, id: \.popupUuid) { popup in
+            GridPopupCell(popup: popup)
+        }
+    }
+}
+```
+
+같은 `popupUuid`가 두 Section에 동시에 포함되어도 소비자가 `best-UUID`, `grid-UUID` 같은 prefix나 별도 wrapper 모델을 만들 필요가 없습니다. `Cell.id`와 `For.didSelect`가 전달하는 원본 Element의 의미도 바뀌지 않습니다.
+
+내부에서는 DifferenceKit identity와 Cell size cache key를 `(sectionID, cellID)`로 구성합니다.
+
+| 식별자 | 고유성 범위 | 역할 |
+|---|---|---|
+| `Section.id` | List 전체 | Section diff와 프로그램 스크롤 |
+| public `Cell.id` | 같은 Section 내부 | 소비자가 선언하는 도메인 ID |
+| 내부 `(sectionID, cellID)` | List 전체 | DifferenceKit element diff와 Cell size cache |
+| `Component.reuseIdentifier` | 호환 가능한 Cell View 타입 | UICollectionView Cell 등록과 재사용 |
+
+같은 Section 안에서 Cell ID가 중복되면 Debug 빌드에서 Section ID와 중복 Cell ID를 포함한 assertion으로 알려줍니다.
+
+Section 범위 identity를 사용하므로 Cell이 다른 Section으로 이동하면 하나의 cross-section move가 아니라 기존 Section의 delete와 새 Section의 insert로 처리됩니다. Section 내부 순서 변경은 기존처럼 move로 처리됩니다.
+
 ### Component
 
 `Component`는 PopPangListKit에서 화면에 표시할 데이터와 동작을 선언하는 가장 작은 단위입니다. Cell 데이터인 `Item`, 실제 UIKit View인 `Content`, 필요한 경우 View와 외부 상태를 연결하는 `Coordinator`를 하나의 계약으로 묶습니다.
@@ -589,6 +624,8 @@ PopPangList(
 ## SwiftUI 업데이트 전략
 
 SwiftUI `PopPangList`는 iOS 15 이상에서 `reconfigureItems`를 기본 사용합니다. 현재 UICollectionViewCell을 유지하면서 콘텐츠를 갱신해 hosting view의 불필요한 재생성을 줄입니다. iOS 13~14에서는 자동으로 `reloadItems`를 사용합니다.
+
+같은 Cell identity에서 콘텐츠가 변경되더라도 기존 Component와 새 Component의 `reuseIdentifier`가 다르면 `reconfigureItems`를 사용하지 않습니다. 이 경우 기존 등록 Cell을 다른 타입으로 재구성할 수 없으므로 `reloadItems`로 안전하게 교체하고 이전 size cache를 무효화합니다.
 
 이 설정은 SwiftUI wrapper의 기본값입니다. UIKit에서 `CollectionViewAdapterConfiguration()`을 직접 만들 때는 기존 `reloadItems` 기본 동작을 유지합니다.
 

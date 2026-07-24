@@ -8,6 +8,15 @@
 import Foundation
 import DifferenceKit
 
+/// DifferenceKit과 셀 사이즈 캐시에서 사용하는 Section 범위의 Cell 식별자입니다.
+///
+/// 외부에 노출되는 `Cell.id`는 도메인 식별자 의미를 그대로 유지하고,
+/// 내부에서만 Section ID와 조합해 서로 다른 Section의 같은 Cell ID를 구분합니다.
+struct SectionScopedCellIdentity: Hashable {
+    let sectionID: AnyHashable
+    let cellID: AnyHashable
+}
+
 public struct Cell: Identifiable, @MainActor ListingViewEventHandler {
     
     /// Cell을 식별하기 위한 ID
@@ -18,10 +27,32 @@ public struct Cell: Identifiable, @MainActor ListingViewEventHandler {
     
     /// 이벤트 저장소
     let eventStorage = ListingViewEventStorage()
+
+    /// DifferenceKit과 셀 사이즈 캐시에서 사용하는 내부 식별자
+    private var sectionScopedIdentity: SectionScopedCellIdentity?
     
     public init(id: some Hashable, component: some Component) {
         self.id = id
         self.component = AnyComponent(component: component)
+        self.sectionScopedIdentity = nil
+    }
+}
+
+extension Cell {
+
+    /// Section에 포함되지 않은 Cell은 기존처럼 raw ID를 사용합니다.
+    /// Section이 Cell을 소유하면 `(sectionID, cellID)`로 범위가 지정됩니다.
+    var internalIdentity: AnyHashable {
+        sectionScopedIdentity.map(AnyHashable.init) ?? id
+    }
+
+    func scoped(to sectionID: AnyHashable) -> Self {
+        var copy = self
+        copy.sectionScopedIdentity = SectionScopedCellIdentity(
+            sectionID: sectionID,
+            cellID: id
+        )
+        return copy
     }
 }
 
@@ -38,7 +69,7 @@ extension Cell: Hashable {
 
 extension Cell: Differentiable {
     public var differenceIdentifier: AnyHashable {
-        id
+        internalIdentity
     }
     
     public func isContentEqual(to source: Cell) -> Bool {

@@ -55,7 +55,7 @@ final public class CollectionViewAdapter: NSObject {
     )?
     
     /// 셀/헤더/푸터 사이즈 캐시 저장소
-    private var componentSizeStorage: ComponentSizeStorage = ComponentSizeStorageImpl()
+    private var componentSizeStorage = ComponentSizeStorageImpl()
     
     /// 현재 화면에 반영된 데이터 상태
     var list: List?
@@ -252,8 +252,43 @@ final public class CollectionViewAdapter: NSObject {
     private func item(at indexPath: IndexPath) -> Cell? {
         sectionItem(at: indexPath.section)?.cells[safe: indexPath.item]
     }
+
+    /// content update가 기존 UICollectionViewCell을 그대로 재구성해도 안전한지 확인합니다.
+    ///
+    /// reuseIdentifier가 바뀌면 기존 등록 셀과 새 등록 셀의 타입이 다를 수 있으므로
+    /// reconfigureItems 대신 reloadItems를 사용하고 이전 사이즈 캐시도 제거합니다.
+    @MainActor
+    private func isReconfigurationCompatible(
+        at indexPath: IndexPath,
+        targetSections: [Section]
+    ) -> Bool {
+        guard let targetCell = targetSections[safe: indexPath.section]?
+            .cells[safe: indexPath.item]
+        else {
+            return false
+        }
+
+        guard let currentCell = item(at: indexPath) else {
+            componentSizeStorage.removeCellSize(
+                for: targetCell.internalIdentity
+            )
+            return false
+        }
+
+        let isCompatible = currentCell.component.reuseIdentifier
+            == targetCell.component.reuseIdentifier
+
+        if isCompatible == false {
+            componentSizeStorage.removeCellSize(
+                for: targetCell.internalIdentity
+            )
+        }
+
+        return isCompatible
+    }
     
     /// DifferenceKit을 사용한 diff 업데이트 수행
+    @MainActor
     private func performDifferentialUpdates(
         old: List?,
         new: List?,
@@ -273,6 +308,12 @@ final public class CollectionViewAdapter: NSObject {
                 self?.list?.sections = sections
             },
             enablesReconfigureItems: configuration.enablesReconfigureItems,
+            isReconfigurationCompatible: { [weak self] indexPath, sections in
+                self?.isReconfigurationCompatible(
+                    at: indexPath,
+                    targetSections: sections
+                ) ?? false
+            },
             completion: completion
         )
     }
@@ -831,7 +872,7 @@ extension CollectionViewAdapter: UICollectionViewDataSource {
         cell.onSizeChanged = { [weak self] size in
             self?.componentSizeStorage.setCellSize(
                 (size, item.component.item),
-                for: item.id
+                for: item.internalIdentity
             )
         }
         
