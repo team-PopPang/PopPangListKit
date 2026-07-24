@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A00100000000000000000001 /* PopPangListKit in Frameworks */ = {isa = PBXBuildFile; productRef = A00100000000000000000002 /* PopPangListKit */; };
+		DF8BE0AB3004A84D00A6CAF3 /* PopPangListKit in Frameworks */ = {isa = PBXBuildFile; productRef = DF8BE0AA3004A84D00A6CAF3 /* PopPangListKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -17,8 +17,6 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A00100000000000000000004 /* Sources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = Sources;
 			sourceTree = "<group>";
 		};
@@ -29,7 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A00100000000000000000001 /* PopPangListKit in Frameworks */,
+				DF8BE0AB3004A84D00A6CAF3 /* PopPangListKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,7 +70,7 @@
 			);
 			name = PopPangListKitDemo;
 			packageProductDependencies = (
-				A00100000000000000000002 /* PopPangListKit */,
+				DF8BE0AA3004A84D00A6CAF3 /* PopPangListKit */,
 			);
 			productName = PopPangListKitDemo;
 			productReference = A00100000000000000000003 /* PopPangListKitDemo.app */;
@@ -103,7 +101,7 @@
 			mainGroup = A00100000000000000000006;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				A00100000000000000000014 /* XCLocalSwiftPackageReference ".." */,
+				DF8BE0A93004A84D00A6CAF3 /* XCLocalSwiftPackageReference "../../PopPangListKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A00100000000000000000007 /* Products */;
@@ -164,6 +162,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				ONLY_ACTIVE_ARCH = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -203,15 +202,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A00100000000000000000013 /* Build configuration list for PBXProject "PopPangListKitDemo" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A00100000000000000000015 /* Debug */,
-				A00100000000000000000016 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		A00100000000000000000009 /* Build configuration list for PBXNativeTarget "PopPangListKitDemo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -221,19 +211,28 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		A00100000000000000000013 /* Build configuration list for PBXProject "PopPangListKitDemo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00100000000000000000015 /* Debug */,
+				A00100000000000000000016 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		A00100000000000000000014 /* XCLocalSwiftPackageReference ".." */ = {
+		DF8BE0A93004A84D00A6CAF3 /* XCLocalSwiftPackageReference "../../PopPangListKit" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ..;
+			relativePath = ../../PopPangListKit;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		A00100000000000000000002 /* PopPangListKit */ = {
+		DF8BE0AA3004A84D00A6CAF3 /* PopPangListKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = A00100000000000000000014 /* XCLocalSwiftPackageReference ".." */;
+			package = DF8BE0A93004A84D00A6CAF3 /* XCLocalSwiftPackageReference "../../PopPangListKit" */;
 			productName = PopPangListKit;
 		};
 /* End XCSwiftPackageProductDependency section */

@@ -55,7 +55,7 @@ struct AsyncPopupLayoutExample: View {
                 )
             )
         }
-        .withHeader {
+        .withHeader(item: "bestPopup") { _ in
             RecommendedSectionHeader()
         }
         .headerBackground(.systemBackground)
@@ -81,7 +81,7 @@ struct AsyncPopupLayoutExample: View {
                 )
             )
         }
-        .withHeader {
+        .withHeader(item: "comingPopup") { _ in
             ComingSoonSectionHeader()
         }
         .headerBackground(.systemBackground)
@@ -98,11 +98,16 @@ struct AsyncPopupLayoutExample: View {
     private var gridSection: PopPangListKit.Section {
         Section(id: "async-grid") {
             For(data.grid, id: \.id) { popup in
-                GridPopupCard(popup: popup)
+                GridPopupCard(
+                    popup: popup,
+                    onLike: {
+                        toggleLike(popupID: popup.id)
+                    }
+                )
             }
             .layoutMode(.flexibleHeight(estimatedHeight: 302))
         }
-        .withHeader {
+        .withHeader(item: "gridPopup") { _ in
             GridSectionHeader()
         }
         .headerBackground(.systemBackground)
@@ -131,6 +136,33 @@ struct AsyncPopupLayoutExample: View {
         data = .loaded
     }
 
+    @MainActor
+    private func toggleLike(popupID: String) {
+        guard let index = data.grid.firstIndex(where: { $0.id == popupID }),
+              !data.grid[index].isLikeUpdating else {
+            return
+        }
+
+        data.grid[index].isLikeUpdating = true
+
+        Task { @MainActor in
+            do {
+                try await Task.sleep(nanoseconds: 800_000_000)
+            } catch {
+                if let index = data.grid.firstIndex(where: { $0.id == popupID }) {
+                    data.grid[index].isLikeUpdating = false
+                }
+                return
+            }
+
+            guard let index = data.grid.firstIndex(where: { $0.id == popupID }) else {
+                return
+            }
+            data.grid[index].isLiked.toggle()
+            data.grid[index].isLikeUpdating = false
+        }
+    }
+
     private func replay() {
         data = .empty
         loadID = UUID()
@@ -143,12 +175,14 @@ private extension AsyncPopupLayoutExample {
         let title: String
         let location: String
         let countdown: String
+        var isLiked = false
+        var isLikeUpdating = false
     }
 
     struct PopupData: Equatable {
-        let recommended: [Popup]
-        let coming: [Popup]
-        let grid: [Popup]
+        var recommended: [Popup]
+        var coming: [Popup]
+        var grid: [Popup]
 
         static let empty = PopupData(
             recommended: [],
@@ -415,6 +449,7 @@ private struct ComingSoonPopupCard: View {
 
 private struct GridPopupCard: View {
     let popup: AsyncPopupLayoutExample.Popup
+    let onLike: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -422,11 +457,25 @@ private struct GridPopupCard: View {
                 .frame(height: 217)
                 .clipShape(RoundedRectangle(cornerRadius: 3))
                 .overlay(alignment: .topTrailing) {
-                    Image(systemName: "heart")
-                        .font(.title3)
-                        .foregroundStyle(.white)
+                    Button(action: onLike) {
+                        Group {
+                            if popup.isLikeUpdating {
+                                ProgressView()
+                                    .tint(.white)
+                            } else {
+                                Image(systemName: popup.isLiked ? "heart.fill" : "heart")
+                                    .font(.title3)
+                                    .foregroundStyle(popup.isLiked ? PopupPalette.orange : .white)
+                            }
+                        }
+                        .frame(width: 25, height: 25)
                         .shadow(radius: 2)
                         .padding(8)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(popup.isLikeUpdating)
+                    .accessibilityLabel(popup.isLiked ? "좋아요 취소" : "좋아요")
+                    .accessibilityValue(popup.isLikeUpdating ? "처리 중" : "")
                 }
 
             Text(popup.title)
