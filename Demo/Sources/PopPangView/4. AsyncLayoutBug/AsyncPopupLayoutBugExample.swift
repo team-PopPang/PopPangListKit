@@ -55,7 +55,7 @@ struct AsyncPopupLayoutExample: View {
                 )
             )
         }
-        .withHeader {
+        .withHeader(item: "bestPopup") { _ in
             RecommendedSectionHeader()
         }
         .headerBackground(.systemBackground)
@@ -81,7 +81,7 @@ struct AsyncPopupLayoutExample: View {
                 )
             )
         }
-        .withHeader {
+        .withHeader(item: "comingPopup") { _ in
             ComingSoonSectionHeader()
         }
         .headerBackground(.systemBackground)
@@ -107,7 +107,7 @@ struct AsyncPopupLayoutExample: View {
             }
             .layoutMode(.flexibleHeight(estimatedHeight: 302))
         }
-        .withHeader {
+        .withHeader(item: "gridPopup") { _ in
             GridSectionHeader()
         }
         .headerBackground(.systemBackground)
